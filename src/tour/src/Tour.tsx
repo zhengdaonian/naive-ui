@@ -109,13 +109,15 @@ export default defineComponent({
                 role="none"
                 ref="containerRef"
                 class={[
-                  `${mergedClsPrefix}-modal-container`,
+                  `${mergedClsPrefix}-tour-container`,
                   this.themeClass,
                   this.namespace
                 ]}
                 style={this.cssVars as CSSProperties}
               >
                 <NTourBodyWrapper
+                  {...this.$attrs}
+                  ref="bodyWrapper"
                   show={this.show}
                   renderMask={
                     unstableShowMask
