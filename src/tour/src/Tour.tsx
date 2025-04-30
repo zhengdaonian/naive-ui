@@ -1,6 +1,7 @@
 import type { CSSProperties, PropType, } from 'vue'
 import type { TourTheme } from '../styles/light'
 import { zindexable } from 'vdirs'
+import { useIsMounted } from 'vooks'
 import {
   computed,
   defineComponent,
@@ -10,23 +11,28 @@ import {
 } from 'vue'
 import { type FollowerPlacement, VLazyTeleport } from 'vueuc'
 import { type ThemeProps, useConfig, useTheme, useThemeClass } from '../../_mixins'
+import { call, type MaybeArray } from '../../_utils'
 import tourLight from '../styles/light'
 import NTourBodyWrapper from './BodyWrapper'
 import style from './styles/index.cssr'
 
 export const tourProps = {
   ...(useTheme.props as ThemeProps<TourTheme>),
+  to: {
+    type: [String, Object] as PropType<string | HTMLElement>,
+    default: 'body',
+  },
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'top'
+  },
   show: {
     type: Boolean as PropType<boolean>,
-    default: false
+    default: true
   },
   unstableShowMask: {
     type: Boolean,
     default: true
-  },
-  to: {
-    type: [String, Object] as PropType<string | HTMLElement>,
-    default: 'body',
   },
   showArrow: {
     type: Boolean,
@@ -34,10 +40,6 @@ export const tourProps = {
   },
   arrowClass: String,
   arrowStyle: [String, Object] as PropType<string | CSSProperties>,
-  placement: {
-    type: String as PropType<FollowerPlacement>,
-    default: 'top'
-  },
   contentClass: String,
   contentStyle: [Object, String] as PropType<CSSProperties | string>,
   showMask: {
@@ -52,12 +54,23 @@ export const tourProps = {
     type: Number,
     default: 0
   },
+  maskClosable: {
+    type: Boolean,
+    default: true
+  },
+  onMaskClick: Function as PropType<(e: MouseEvent) => void>,
   scrollIntoViewOptions: {
     type: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,
     default: () => ({
       block: 'center',
     }),
   },
+  'onUpdate:show': [Function, Array] as PropType<
+    MaybeArray<(value: boolean) => void>
+  >,
+  onUpdateShow: [Function, Array] as PropType<
+    MaybeArray<(value: boolean) => void>
+  >,
   zIndex: Number
 } as const
 
@@ -67,6 +80,7 @@ export default defineComponent({
   props: tourProps,
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props)
+    const isMountedRef = useIsMounted()
     const themeRef = useTheme(
       'Tour',
       '-tour',
@@ -77,22 +91,47 @@ export default defineComponent({
     )
     const cssVarsRef = computed<Record<string, string>>(() => {
       const {
-        self: {},
-        common: {}
+        common: { cubicBezierEaseIn, cubicBezierEaseOut },
+        self: {}
       } = themeRef.value
       return {
-
+        '--n-bezier-out': cubicBezierEaseOut,
+        '--n-bezier-in': cubicBezierEaseIn,
       }
     })
     const themeClassHandle = inlineThemeDisabled
       ? useThemeClass('theme-class', undefined, cssVarsRef, props)
       : undefined
+
+    function doUpdateShow(show: boolean): void {
+      const { onUpdateShow, 'onUpdate:show': _onUpdateShow } = props
+      if (onUpdateShow)
+        call(onUpdateShow, show)
+      if (_onUpdateShow)
+        call(_onUpdateShow, show)
+    }
+
+    function handleMaskClick(e: MouseEvent): void {
+      const { onMaskClick, maskClosable } = props
+      if (maskClosable) {
+        doUpdateShow(false)
+      }
+      if (onMaskClick)
+        onMaskClick(e)
+    }
+
+    function handleOutsideClick(e: MouseEvent): void {
+      handleMaskClick(e)
+    }
+
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       namespace: namespaceRef,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
-      onRender: themeClassHandle?.onRender
+      handleMaskClick,
+      onRender: themeClassHandle?.onRender,
+      isMounted: isMountedRef
     }
   },
 
@@ -103,46 +142,41 @@ export default defineComponent({
         {{
           default: () => {
             this.onRender?.()
-            const { unstableShowMask } = this
             return withDirectives(
               <div
-                role="none"
-                ref="containerRef"
                 class={[
                   `${mergedClsPrefix}-tour-container`,
-                  this.themeClass,
-                  this.namespace
+                  this.namespace,
+                  this.themeClass
                 ]}
                 style={this.cssVars as CSSProperties}
+                role="none"
               >
+                {this.showMask ? (
+                  <Transition name="fade-in-transition" appear={this.isMounted}>
+                    {{
+                      default: () =>
+                        this.show ? (
+                          <div
+                            aria-hidden
+                            class={[
+                              `${mergedClsPrefix}-tour-mask`,
+                              this.showMask === 'transparent'
+                              && `${mergedClsPrefix}-tour-mask--invisible`
+                            ]}
+                            onClick={this.handleMaskClick}
+                          />
+                        ) : null
+                    }}
+                  </Transition>
+
+                ) : null}
                 <NTourBodyWrapper
                   {...this.$attrs}
                   ref="bodyWrapper"
                   show={this.show}
-                  renderMask={
-                    unstableShowMask
-                      ? () => (
-                          <Transition
-                            name="fade-in-transition"
-                            key="mask"
-                            appear={this.internalAppear ?? this.isMounted}
-                          >
-                            {{
-                              default: () => {
-                                return this.show ? (
-                                  <div
-                                    aria-hidden
-                                    ref="containerRef"
-                                    class={`${mergedClsPrefix}-modal-mask`}
-                                    onClick={this.handleClickoutside}
-                                  />
-                                ) : null
-                              }
-                            }}
-                          </Transition>
-                        )
-                      : undefined
-                  }
+                  showMask={this.showMask}
+                  onClickoutside={this.handleOutsideClick}
                 >
                   {this.$slots}
                 </NTourBodyWrapper>

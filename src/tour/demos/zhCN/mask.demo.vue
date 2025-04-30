@@ -1,7 +1,7 @@
 <markdown>
-# 基础用法
+# 非模态
 
-使用 `n-tour` 组件来创建一个简单的引导步骤。
+使用 :mask="false" 可以将引导变为非模态。
 </markdown>
 
 <script lang="ts" setup>
@@ -46,5 +46,5 @@ const steps = [
       </template>
     </n-button>
   </n-space>
-  <n-tour v-model:show="active" :steps="steps" />
+  <n-tour v-model:show="active" :show-mask="false" :steps="steps" />
 </template>

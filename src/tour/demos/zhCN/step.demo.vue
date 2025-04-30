@@ -1,7 +1,7 @@
 <markdown>
-# 基础用法
+# 步骤用法
 
-使用 `n-tour` 组件来创建一个简单的引导步骤。
+使用 `n-tour-step` 组件来创建多个步骤的引导。
 </markdown>
 
 <script lang="ts" setup>
@@ -16,14 +16,6 @@ const active = ref(false)
 function handleOpen() {
   active.value = true
 }
-
-const steps = [
-  {
-    title: 'Upload File',
-    description: 'Put  your files here.',
-    target: () => ref1.value
-  }
-]
 </script>
 
 <template>
@@ -46,5 +38,11 @@ const steps = [
       </template>
     </n-button>
   </n-space>
-  <n-tour v-model:show="active" :steps="steps" />
+  <n-tour v-model:show="active">
+    <n-tour-step
+      title="Upload File"
+      description="Put  your files here."
+      :target="ref1"
+    />
+  </n-tour>
 </template>

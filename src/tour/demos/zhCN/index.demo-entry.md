@@ -1,25 +1,25 @@
-# 浮动按钮 Float Button
+# 漫游式引导 Tour
 
-跟 `Back Top` 很像，多一份颜值，多一份互动。
+用于分步引导用户了解产品功能的气泡组件。 用来引导用户并介绍产品
 
-自 `2.38.0` 开始提供。
+自 `2.41.2` 开始提供。
 
 ## 演示
 
 ```demo
 basic.vue
+step.vue
+mask.vue
 ```
 
 ## API
 
-### FloatButton Props
-
-| 名称   | 类型               | 默认值 | 说明                     | 版本   |
-| ------ | ------------------ | ------ | ------------------------ | ------ |
-| bottom | `number \| string` | `40`   | 按钮的 CSS `bottom` 属性 | 2.38.0 |
-
-### FloatButtonGroup Props
+### Tour Props
 
 | 名称 | 类型 | 默认值 | 说明 | 版本 |
 | --- | --- | --- | --- | --- |
-| bottom | `number \| string` | `undefined` | 按钮组的 CSS `bottom` 属性 | 2.38.0 |
+| to | `string \| HTMLElement` | `body` | 模态的挂载位置 |  |
+| bottom | `number \| string` | `undefined` | 按钮组的 CSS `bottom` 属性 |  |
+| placement | `'top-start' \| 'top' \| 'top-end' \| 'right-start' \| 'right' \| 'right-end' \| 'bottom-start' \| 'bottom' \| 'bottom-end' \| 'left-start' \| 'left' \| 'left-end'` | `'top'` | tour 的弹出位置 |  |
+| show-arrow | `boolean` | `true` | 是否显示箭头 |  |
+| show-mask | `boolean \| 'transparent'` | true | 是否显示遮罩，如果设为 'transparent' 会展示透明遮罩，如果设为 false 会禁用 trap-focus |  |
