@@ -1,12 +1,25 @@
 import type { Theme } from '../../_mixins'
 import type { ThemeCommonVars } from '../../_styles/common'
 import { commonLight } from '../../_styles/common'
+import commonVariables from './_common'
 
 function self(vars: ThemeCommonVars) {
-  // eslint-disable-next-line no-empty-pattern
   const {
+    boxShadow2,
+    popoverColor,
+    textColor2,
+    borderRadius,
+    fontSize,
+    dividerColor
   } = vars
   return {
+    ...commonVariables,
+    fontSize,
+    borderRadius,
+    color: popoverColor,
+    dividerColor,
+    textColor: textColor2,
+    boxShadow: boxShadow2
   }
 }
 

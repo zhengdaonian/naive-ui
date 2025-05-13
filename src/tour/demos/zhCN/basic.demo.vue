@@ -13,6 +13,7 @@ const ref2 = ref()
 const ref3 = ref()
 
 const active = ref(false)
+const currentStep = ref(0)
 function handleOpen() {
   active.value = true
 }
@@ -21,7 +22,7 @@ const steps = [
   {
     title: 'Upload File',
     description: 'Put  your files here.',
-    target: () => ref1.value
+    target: () => '#step1'
   }
 ]
 </script>
@@ -34,7 +35,7 @@ const steps = [
   <n-divider />
 
   <n-space>
-    <n-button ref="ref1">
+    <n-button id="step1" ref="ref1">
       Upload
     </n-button>
     <n-button ref="ref2" type="primary">
@@ -46,5 +47,24 @@ const steps = [
       </template>
     </n-button>
   </n-space>
-  <n-tour v-model:show="active" :steps="steps" />
+  <n-tour v-model:show="active" :current="currentStep" :steps="steps">
+    <el-tour-step :target="ref1?.$el" title="Upload File">
+      <img
+        style="width: 240px"
+        src="https://element-plus.org/images/element-plus-logo.svg"
+        alt="tour.png"
+      >
+      <div>Put you files here.</div>
+    </el-tour-step>
+    <el-tour-step
+      :target="ref2?.$el"
+      title="Save"
+      description="Save your changes"
+    />
+    <el-tour-step
+      :target="ref3?.$el"
+      title="Other Actions"
+      description="Click to see other"
+    />
+  </n-tour>
 </template>

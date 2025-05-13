@@ -1,91 +1,131 @@
-import type { DirectiveArguments, PropType, SlotsType, VNodeChild } from 'vue'
-import { clickoutside } from 'vdirs'
-import { computed, defineComponent, h, mergeProps, vShow, withDirectives } from 'vue'
-import { type FollowerPlacement, VFocusTrap } from 'vueuc'
+import type { ThemeProps } from '../../_mixins'
+import type { TourTheme } from '../styles'
+import type { TourTrigger } from './interface'
+import type { TourInjection } from './Tour'
+import { getPreciseEventTarget } from 'seemly'
+import { clickoutside, mousemoveoutside } from 'vdirs'
+import {
+  computed,
+  type CSSProperties,
+  defineComponent,
+  type DirectiveArguments,
+  Fragment,
+  h,
+  inject,
+  mergeProps,
+  onBeforeUnmount,
+  type PropType,
+  provide,
+  ref,
+  toRef,
+  Transition,
+  type VNode,
+  type VNodeChild,
+  vShow,
+  watch,
+  watchEffect,
+  withDirectives
+} from 'vue'
+import {
+  type FollowerInst,
+  type FollowerPlacement,
+  VFocusTrap,
+  VFollower
+} from 'vueuc'
+import { NxScrollbar } from '../../_internal/scrollbar'
+import { useConfig, useTheme, useThemeClass } from '../../_mixins'
+import {
+  formatLength,
+  isJsdom,
+  isSlotEmpty,
+  resolveWrappedSlot,
+  useAdjustedTo
+} from '../../_utils'
+import { drawerBodyInjectionKey } from '../../drawer/src/interface'
+import { modalBodyInjectionKey } from '../../modal/src/interface'
+import { tourLight } from '../styles'
+import { tourBodyInjectionKey } from './interface'
+import style from './styles/index.cssr'
 
-export const tourBodyWrapperProps = {
-  show: {
-    type: Boolean,
-    required: true
-  },
-  placement: {
-    type: String as PropType<FollowerPlacement>,
-    required: true
-  },
-  trapFocus: {
-    type: Boolean,
-    default: true
-  },
-  autoFocus: {
-    type: Boolean,
-    default: true
-  },
-  showMask: {
-    type: [Boolean, String] as PropType<boolean | 'transparent'>,
-    required: true
-  },
-  onClickoutside: Function as PropType<(e: MouseEvent) => void>
-} as const
+export const tourBodyProps = {
+  ...(useTheme.props as ThemeProps<TourTheme>),
+  to: useAdjustedTo.propTo,
+  show: Boolean,
+  trigger: String as PropType<TourTrigger>,
+  showArrow: Boolean,
+  delay: Number,
+  duration: Number,
+  raw: Boolean,
+  arrowPointToCenter: Boolean,
+  arrowClass: String,
+  arrowStyle: [String, Object] as PropType<string | CSSProperties>,
+  arrowWrapperClass: String,
+  arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
+  x: Number,
+  y: Number,
+  flip: Boolean,
+  overlap: Boolean,
+  placement: String as PropType<FollowerPlacement>,
+  width: [Number, String] as PropType<number | 'trigger'>,
+  keepAliveOnHover: Boolean,
+  scrollable: Boolean,
+  contentClass: String,
+  contentStyle: [Object, String] as PropType<CSSProperties | string>,
+  headerClass: String,
+  headerStyle: [Object, String] as PropType<CSSProperties | string>,
+  footerClass: String,
+  footerStyle: [Object, String] as PropType<CSSProperties | string>,
+  // private
+  internalDeactivateImmediately: Boolean,
+  onClickoutside: Function as PropType<(e: MouseEvent) => void>,
+  internalTrapFocus: Boolean,
+  internalOnAfterLeave: Function as PropType<() => void>,
+  // deprecated
+  minWidth: Number,
+  maxWidth: Number
+}
+
+interface RenderArrowProps {
+  arrowClass: string | undefined
+  arrowStyle: string | CSSProperties | undefined
+  arrowWrapperClass: string | undefined
+  arrowWrapperStyle: string | CSSProperties | undefined
+  clsPrefix: string
+}
+
+export function renderArrow({
+  arrowClass,
+  arrowStyle,
+  arrowWrapperClass,
+  arrowWrapperStyle,
+  clsPrefix
+}: RenderArrowProps): VNode | null {
+  return (
+    <div
+      key="__tour-arrow__"
+      style={arrowWrapperStyle}
+      class={[`${clsPrefix}-tour-arrow-wrapper`, arrowWrapperClass]}
+    >
+      <div
+        class={[`${clsPrefix}-tour-arrow`, arrowClass]}
+        style={arrowStyle}
+      />
+    </div>
+  )
+}
 
 export default defineComponent({
-  name: 'NTourContent',
+  name: 'TourBody',
   inheritAttrs: false,
-  props: tourBodyWrapperProps,
-  slots: Object as SlotsType<any>,
-  setup(props) {
-    const bodyDirectivesRef = computed<DirectiveArguments>(() => {
-      const { show } = props
-      const directives: DirectiveArguments = [[vShow, show]]
-      if (!props.showMask) {
-        directives.push([
-          clickoutside,
-          props.onClickoutside,
-          undefined as unknown as string,
-          { capture: true }
-        ])
-      }
-      return directives
-    })
-
+  props: tourBodyProps,
+  setup(props, { slots, attrs }) {
     return {
-      bodyDirectives: bodyDirectivesRef,
+
     }
   },
   render() {
-    return this.show
-      ? withDirectives(
-          <div role="none">
-            <VFocusTrap
-              disabled={!this.showMask || !this.trapFocus}
-              active={this.show}
-              autoFocus={this.autoFocus}
-            >
-              {{
-                default: () =>
-                  withDirectives(
-                    h(
-                      'div',
-                      mergeProps(this.$attrs, {
-                        role: 'tour',
-                        ref: 'bodyRef',
-                        'aria-modal': 'true'
-                      }),
-                      [
-                        <div>123</div>
-                      ]
-                    ),
-                    this.bodyDirectives
-                  )
-              }}
-            </VFocusTrap>
-          </div>,
-          [
-            [
-              vShow,
-              this.show
-            ]
-          ]
-        )
-      : null
+    return (
+      <div>123</div>
+    )
   }
 })

@@ -1,19 +1,29 @@
+import type { CNode } from 'css-render'
+import type { FollowerPlacement } from 'vueuc'
 import { fadeInTransition } from '../../../_styles/transitions/fade-in.cssr'
-import { c, cB, cE, cM } from '../../../_utils/cssr'
+import { c, cB, cCB, cE, cM } from '../../../_utils/cssr'
+import { map } from 'lodash-es'
 
-// vars:
-// --n-bezier
-// --n-box-shadow
-// --n-box-shadow-hover
-// --n-box-shadow-pressed
-// --n-color
-// --n-text-color
-// --n-color-hover
-// --n-color-pressed
-// --n-border-radius-square
+const oppositePlacement = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left'
+}
+
+const arrowSize = 'var(--n-arrow-height) * 1.414'
+
 export default c([
   cB('tour', `
-  
+     transition:
+      box-shadow .3s var(--n-bezier),
+      background-color .3s var(--n-bezier),
+      color .3s var(--n-bezier);
+    position: relative;
+    font-size: var(--n-font-size);
+    color: var(--n-text-color);
+    box-shadow: var(--n-box-shadow);
+    word-break: break-word;
   `),
   cB('tour-container', `
     position: relative;
@@ -45,5 +55,151 @@ export default c([
       enterCubicBezier: 'var(--n-bezier-in)',
       leaveCubicBezier: 'var(--n-bezier-out)'
     })
-  ])
+  ]),
+  cB('tour-shared', `
+      transform-origin: inherit;
+    `, [
+    cB('tour-arrow-wrapper', `
+        position: absolute;
+        overflow: hidden;
+        pointer-events: none;
+      `, [
+      cB('tour-arrow', `
+          transition: background-color .3s var(--n-bezier);
+          position: absolute;
+          display: block;
+          width: calc(${arrowSize});
+          height: calc(${arrowSize});
+          box-shadow: 0 0 8px 0 rgba(0, 0, 0, .12);
+          transform: rotate(45deg);
+          background-color: var(--n-color);
+          pointer-events: all;
+        `)
+    ]),
+  ]),
+  placementStyle('top-start', `
+    top: calc(${arrowSize} / -2);
+    left: calc(${getArrowOffset('top-start')} - var(--v-offset-left));
+  `),
+  placementStyle('top', `
+    top: calc(${arrowSize} / -2);
+    transform: translateX(calc(${arrowSize} / -2)) rotate(45deg);
+    left: 50%;
+  `),
+  placementStyle('top-end', `
+    top: calc(${arrowSize} / -2);
+    right: calc(${getArrowOffset('top-end')} + var(--v-offset-left));
+  `),
+  placementStyle('bottom-start', `
+    bottom: calc(${arrowSize} / -2);
+    left: calc(${getArrowOffset('bottom-start')} - var(--v-offset-left));
+  `),
+  placementStyle('bottom', `
+    bottom: calc(${arrowSize} / -2);
+    transform: translateX(calc(${arrowSize} / -2)) rotate(45deg);
+    left: 50%;
+  `),
+  placementStyle('bottom-end', `
+    bottom: calc(${arrowSize} / -2);
+    right: calc(${getArrowOffset('bottom-end')} + var(--v-offset-left));
+  `),
+  placementStyle('left-start', `
+    left: calc(${arrowSize} / -2);
+    top: calc(${getArrowOffset('left-start')} - var(--v-offset-top));
+  `),
+  placementStyle('left', `
+    left: calc(${arrowSize} / -2);
+    transform: translateY(calc(${arrowSize} / -2)) rotate(45deg);
+    top: 50%;
+  `),
+  placementStyle('left-end', `
+    left: calc(${arrowSize} / -2);
+    bottom: calc(${getArrowOffset('left-end')} + var(--v-offset-top));
+  `),
+  placementStyle('right-start', `
+    right: calc(${arrowSize} / -2);
+    top: calc(${getArrowOffset('right-start')} - var(--v-offset-top));
+  `),
+  placementStyle('right', `
+    right: calc(${arrowSize} / -2);
+    transform: translateY(calc(${arrowSize} / -2)) rotate(45deg);
+    top: 50%;
+  `),
+  placementStyle('right-end', `
+    right: calc(${arrowSize} / -2);
+    bottom: calc(${getArrowOffset('right-end')} + var(--v-offset-top));
+  `),
+  ...map(
+    {
+      top: ['right-start', 'left-start'],
+      right: ['top-end', 'bottom-end'],
+      bottom: ['right-end', 'left-end'],
+      left: ['top-start', 'bottom-start']
+    },
+    (placements, direction): CNode[] => {
+      const isVertical = ['right', 'left'].includes(direction)
+      const sizeType = isVertical ? 'width' : 'height'
+      return placements.map((placement) => {
+        const isReverse = placement.split('-')[1] === 'end'
+        const targetSize = `var(--v-target-${sizeType}, 0px)`
+        const centerOffset = `calc((${targetSize} - ${arrowSize}) / 2)`
+        const offset = getArrowOffset(placement as FollowerPlacement)
+        return c(`[v-placement="${placement}"] >`, [
+          cB('tour-shared', [
+            cM('center-arrow', [
+              cB(
+                'tour-arrow',
+                `${direction}: calc(max(${centerOffset}, ${offset}) ${
+                  isReverse ? '+' : '-'
+                } var(--v-offset-${isVertical ? 'left' : 'top'}));`
+              )
+            ])
+          ])
+        ])
+      })
+    }
+  )
 ])
+
+function getArrowOffset(placement: FollowerPlacement): string {
+  return ['top', 'bottom'].includes(placement.split('-')[0])
+    ? 'var(--n-arrow-offset)'
+    : 'var(--n-arrow-offset-vertical)'
+}
+
+function placementStyle(
+  placement: FollowerPlacement,
+  arrowStyleLiteral: string
+): CNode {
+  const position = placement.split('-')[0] as
+    | 'top'
+    | 'right'
+    | 'bottom'
+    | 'left'
+  const sizeStyle = ['top', 'bottom'].includes(position)
+    ? 'height: var(--n-space-arrow);'
+    : 'width: var(--n-space-arrow);'
+  return c(`[v-placement="${placement}"] >`, [
+    cB('tour-shared', `
+      margin-${oppositePlacement[position]}: var(--n-space);
+    `, [
+      cM('show-arrow', `
+        margin-${oppositePlacement[position]}: var(--n-space-arrow);
+      `),
+      cM('overlap', `
+        margin: 0;
+      `),
+      cCB('tour-arrow-wrapper', `
+        right: 0;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        ${position}: 100%;
+        ${oppositePlacement[position]}: auto;
+        ${sizeStyle}
+      `, [
+        cB('tour-arrow', arrowStyleLiteral)
+      ])
+    ])
+  ])
+}

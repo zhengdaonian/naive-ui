@@ -8,7 +8,6 @@
 
 ```demo
 basic.vue
-step.vue
 mask.vue
 ```
 
