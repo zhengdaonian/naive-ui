@@ -170,7 +170,7 @@ export default defineComponent({
                 role="none"
                 ref="containerRef"
                 class={[
-                  `${mergedClsPrefix}-tour-container`,
+                  `${mergedClsPrefix}-tour`,
                   this.themeClass,
                   this.namespace
                 ]}
@@ -193,13 +193,7 @@ export default defineComponent({
                     }}
                   </Transition>
                 ) : null}
-                <NTourBodyWrapper
-                  {...this.$attrs}
-                  show={this.show}
-                  showArrow={this.mergedShowArrow}
-                >
-
-                </NTourBodyWrapper>
+                
               </div>,
               [
                 [

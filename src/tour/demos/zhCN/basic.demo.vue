@@ -32,6 +32,10 @@ const steps = [
     Begin Tour
   </n-button>
 
+  <n-tour v-model:show="active">
+    <span>或许不想知道你的花园长得咋样</span>
+  </n-tour>
+  {{ active }}
   <n-divider />
 
   <n-space>
@@ -47,7 +51,7 @@ const steps = [
       </template>
     </n-button>
   </n-space>
-  <n-tour v-model:show="active" :current="currentStep" :steps="steps">
+  <!-- <n-tour v-model:show="active" :current="currentStep" :steps="steps">
     <el-tour-step :target="ref1?.$el" title="Upload File">
       <img
         style="width: 240px"
@@ -66,5 +70,5 @@ const steps = [
       title="Other Actions"
       description="Click to see other"
     />
-  </n-tour>
+  </n-tour> -->
 </template>

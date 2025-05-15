@@ -2,8 +2,6 @@ import type { ThemeProps } from '../../_mixins'
 import type { TourTheme } from '../styles'
 import type { TourTrigger } from './interface'
 import type { TourInjection } from './Tour'
-import { getPreciseEventTarget } from 'seemly'
-import { clickoutside, mousemoveoutside } from 'vdirs'
 import {
   computed,
   type CSSProperties,
@@ -32,7 +30,6 @@ import {
   VFocusTrap,
   VFollower
 } from 'vueuc'
-import { NxScrollbar } from '../../_internal/scrollbar'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import {
   formatLength,
@@ -49,26 +46,18 @@ import style from './styles/index.cssr'
 
 export const tourBodyProps = {
   ...(useTheme.props as ThemeProps<TourTheme>),
-  to: useAdjustedTo.propTo,
+  to: [String, Object] as PropType<string | HTMLElement>,
   show: Boolean,
   trigger: String as PropType<TourTrigger>,
   showArrow: Boolean,
-  delay: Number,
-  duration: Number,
-  raw: Boolean,
   arrowPointToCenter: Boolean,
   arrowClass: String,
   arrowStyle: [String, Object] as PropType<string | CSSProperties>,
   arrowWrapperClass: String,
   arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
-  x: Number,
-  y: Number,
   flip: Boolean,
-  overlap: Boolean,
   placement: String as PropType<FollowerPlacement>,
   width: [Number, String] as PropType<number | 'trigger'>,
-  keepAliveOnHover: Boolean,
-  scrollable: Boolean,
   contentClass: String,
   contentStyle: [Object, String] as PropType<CSSProperties | string>,
   headerClass: String,
@@ -77,12 +66,8 @@ export const tourBodyProps = {
   footerStyle: [Object, String] as PropType<CSSProperties | string>,
   // private
   internalDeactivateImmediately: Boolean,
-  onClickoutside: Function as PropType<(e: MouseEvent) => void>,
-  internalTrapFocus: Boolean,
+  animated: Boolean,
   internalOnAfterLeave: Function as PropType<() => void>,
-  // deprecated
-  minWidth: Number,
-  maxWidth: Number
 }
 
 interface RenderArrowProps {
@@ -119,13 +104,283 @@ export default defineComponent({
   inheritAttrs: false,
   props: tourBodyProps,
   setup(props, { slots, attrs }) {
-    return {
+    const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled }
+      = useConfig(props)
+    const themeRef = useTheme(
+      'Tour',
+      '-tour',
+      style,
+      tourLight,
+      props,
+      mergedClsPrefixRef
+    )
+    const followerRef = ref<FollowerInst | null>(null)
+    const NTour = inject<TourInjection>('NTour') as TourInjection
+    const bodyRef = ref<HTMLElement | null>(null)
+    const followerEnabledRef = ref(props.show)
+    const displayedRef = ref(false)
+    watchEffect(() => {
+      const { show } = props
+      if (show && !isJsdom() && !props.internalDeactivateImmediately) {
+        displayedRef.value = true
+      }
+    })
+    const directivesRef = computed<DirectiveArguments>(() => {
+      const directives: DirectiveArguments = []
+      return directives
+    })
 
+    const cssVarsRef = computed(() => {
+      const {
+        common: { cubicBezierEaseInOut, cubicBezierEaseIn, cubicBezierEaseOut },
+        self: {
+          space,
+          spaceArrow,
+          padding,
+          fontSize,
+          textColor,
+          dividerColor,
+          color,
+          boxShadow,
+          borderRadius,
+          arrowHeight,
+          arrowOffset,
+          arrowOffsetVertical
+        }
+      } = themeRef.value
+
+      return {
+        '--n-box-shadow': boxShadow,
+        '--n-bezier': cubicBezierEaseInOut,
+        '--n-bezier-ease-in': cubicBezierEaseIn,
+        '--n-bezier-ease-out': cubicBezierEaseOut,
+        '--n-font-size': fontSize,
+        '--n-text-color': textColor,
+        '--n-color': color,
+        '--n-divider-color': dividerColor,
+        '--n-border-radius': borderRadius,
+        '--n-arrow-height': arrowHeight,
+        '--n-arrow-offset': arrowOffset,
+        '--n-arrow-offset-vertical': arrowOffsetVertical,
+        '--n-padding': padding,
+        '--n-space': space,
+        '--n-space-arrow': spaceArrow
+      }
+    })
+    const styleRef = computed(() => {
+      const width
+        = props.width === 'trigger' ? undefined : formatLength(props.width)
+      const style: CSSProperties[] = []
+      if (width) {
+        style.push({ width })
+      }
+      if (!inlineThemeDisabled) {
+        style.push(cssVarsRef.value)
+      }
+      return style
+    })
+    const themeClassHandle = inlineThemeDisabled
+      ? useThemeClass('tour', undefined, cssVarsRef, props)
+      : undefined
+    NTour.setBodyInstance({
+      syncPosition
+    })
+    onBeforeUnmount(() => {
+      NTour.setBodyInstance(null)
+    })
+    watch(toRef(props, 'show'), (value) => {
+      // If no animation, no transition component will be applied to the
+      // component. So we need to trigger follower manaully.
+      if (props.animated)
+        return
+      if (value) {
+        followerEnabledRef.value = true
+      }
+      else {
+        followerEnabledRef.value = false
+      }
+    })
+    function syncPosition(): void {
+      followerRef.value?.syncPosition()
+    }
+
+    provide(tourBodyInjectionKey, bodyRef)
+    provide(drawerBodyInjectionKey, null)
+    provide(modalBodyInjectionKey, null)
+
+    function renderContentNode(): VNode | null {
+      themeClassHandle?.onRender()
+      let contentNode: VNode
+      const renderBody = NTour.internalRenderBodyRef.value
+      const { value: mergedClsPrefix } = mergedClsPrefixRef
+      if (!renderBody) {
+        const { value: extraClass } = NTour.extraClassRef
+        const hasHeaderOrFooter
+          = !isSlotEmpty(slots.header) || !isSlotEmpty(slots.footer)
+        const renderContentInnerNode = (): VNodeChild[] => {
+          const body = hasHeaderOrFooter ? (
+            <>
+              {resolveWrappedSlot(slots.header, (children) => {
+                return children ? (
+                  <div
+                    class={[
+                      `${mergedClsPrefix}-tour__header`,
+                      props.headerClass
+                    ]}
+                    style={props.headerStyle}
+                  >
+                    {children}
+                  </div>
+                ) : null
+              })}
+              {resolveWrappedSlot(slots.default, (children) => {
+                return children ? (
+                  <div
+                    class={[
+                      `${mergedClsPrefix}-tour__content`,
+                      props.contentClass
+                    ]}
+                    style={props.contentStyle}
+                  >
+                    {slots}
+                  </div>
+                ) : null
+              })}
+              {resolveWrappedSlot(slots.footer, (children) => {
+                return children ? (
+                  <div
+                    class={[
+                      `${mergedClsPrefix}-tour__footer`,
+                      props.footerClass
+                    ]}
+                    style={props.footerStyle}
+                  >
+                    {children}
+                  </div>
+                ) : null
+              })}
+            </>
+          ) : (
+            <div
+              class={[
+                `${mergedClsPrefix}-tour__content`,
+                props.contentClass
+              ]}
+              style={props.contentStyle}
+            >
+              {slots}
+            </div>
+          )
+
+          const arrow = props.showArrow
+            ? renderArrow({
+                arrowClass: props.arrowClass,
+                arrowStyle: props.arrowStyle,
+                arrowWrapperClass: props.arrowWrapperClass,
+                arrowWrapperStyle: props.arrowWrapperStyle,
+                clsPrefix: mergedClsPrefix
+              })
+            : null
+          return [body, arrow]
+        }
+        contentNode = h(
+          'div',
+          mergeProps(
+            {
+              class: [
+                `${mergedClsPrefix}-tour`,
+                `${mergedClsPrefix}-tour-shared`,
+                themeClassHandle?.themeClass.value,
+                extraClass.map(v => `${mergedClsPrefix}-${v}`),
+                {
+                  [`${mergedClsPrefix}-tour--show-header-or-footer`]:
+                    hasHeaderOrFooter,
+                  [`${mergedClsPrefix}-tour-shared--show-arrow`]:
+                    props.showArrow,
+                  [`${mergedClsPrefix}-tour-shared--center-arrow`]:
+                    props.arrowPointToCenter
+                }
+              ],
+              ref: bodyRef,
+              style: styleRef.value
+            },
+            attrs
+          ),
+
+          <VFocusTrap active={props.show} autoFocus>
+            {{ default: renderContentInnerNode }}
+          </VFocusTrap>
+
+        )
+      }
+      else {
+        contentNode = renderBody(
+          [
+            `${mergedClsPrefix}-tour-shared`,
+            themeClassHandle?.themeClass.value,
+            props.showArrow && `${mergedClsPrefix}-tour-shared--show-arrow`,
+            props.arrowPointToCenter
+            && `${mergedClsPrefix}-tour-shared--center-arrow`
+          ],
+          bodyRef,
+          styleRef.value
+        )
+      }
+      return withDirectives(contentNode, directivesRef.value)
+    }
+
+    return {
+      displayed: displayedRef,
+      namespace: namespaceRef,
+      isMounted: NTour.isMountedRef,
+      zIndex: NTour.zIndexRef,
+      followerRef,
+      adjustedTo: useAdjustedTo(props),
+      followerEnabled: followerEnabledRef,
+      renderContentNode
     }
   },
   render() {
     return (
-      <div>123</div>
+      <VFollower
+        ref="followerRef"
+        zIndex={this.zIndex}
+        show={this.show}
+        enabled={this.followerEnabled}
+        to={this.adjustedTo}
+        flip={this.flip}
+        placement={this.placement}
+        containerClass={this.namespace}
+        width={this.width === 'trigger' ? 'target' : undefined}
+        teleportDisabled={this.adjustedTo === useAdjustedTo.tdkey}
+      >
+        {{
+          default: () => {
+            return this.animated ? (
+              <Transition
+                name="tour-transition"
+                appear={this.isMounted}
+                // Don't use watch to enable follower, since the transition may
+                // make position sync timing very subtle and buggy.
+                onEnter={() => {
+                  this.followerEnabled = true
+                }}
+                onAfterLeave={() => {
+                  this.internalOnAfterLeave?.()
+                  this.followerEnabled = false
+                  this.displayed = false
+                }}
+              >
+                {{
+                  default: this.renderContentNode
+                }}
+              </Transition>
+            ) : (
+              this.renderContentNode()
+            )
+          }
+        }}
+      </VFollower>
     )
   }
 })

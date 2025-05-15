@@ -1,8 +1,8 @@
 import type { CNode } from 'css-render'
 import type { FollowerPlacement } from 'vueuc'
+import { map } from 'lodash-es'
 import { fadeInTransition } from '../../../_styles/transitions/fade-in.cssr'
 import { c, cB, cCB, cE, cM } from '../../../_utils/cssr'
-import { map } from 'lodash-es'
 
 const oppositePlacement = {
   top: 'bottom',
@@ -13,9 +13,24 @@ const oppositePlacement = {
 
 const arrowSize = 'var(--n-arrow-height) * 1.414'
 
+// vars:
+// --n-bezier
+// --n-bezier-ease-in
+// --n-bezier-ease-out
+// --n-font-size
+// --n-text-color
+// --n-color
+// --n-border-radius
+// --n-arrow-height
+// --n-arrow-offset
+// --n-arrow-offset-vertical
+// --n-padding
+// --n-space
+// --n-space-arrow
+// --n-divider-color
 export default c([
   cB('tour', `
-     transition:
+    transition:
       box-shadow .3s var(--n-bezier),
       background-color .3s var(--n-bezier),
       color .3s var(--n-bezier);
@@ -24,58 +39,89 @@ export default c([
     color: var(--n-text-color);
     box-shadow: var(--n-box-shadow);
     word-break: break-word;
-  `),
-  cB('tour-container', `
-    position: relative;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    pointer-events: none;
   `, [
-    c('> *', `
-      pointer-events: all;
-    `)
+    c('>', [
+      cB('scrollbar', `
+        height: inherit;
+        max-height: inherit;
+      `)
+    ]),
+    cE('header', `
+      padding: var(--n-padding);
+      border-bottom: 1px solid var(--n-divider-color);
+      transition: border-color .3s var(--n-bezier);
+    `),
+    cE('footer', `
+      padding: var(--n-padding);
+      border-top: 1px solid var(--n-divider-color);
+      transition: border-color .3s var(--n-bezier);
+    `),
+    cM('show-header-or-footer', [
+      cE('content', `
+        padding: var(--n-padding);
+      `)
+    ])
   ]),
   cB('tour-mask', `
-      background-color: rgba(0, 0, 0, .3);
-      position: absolute;
+      position: fixed;
       left: 0;
       right: 0;
       top: 0;
       bottom: 0;
+      background-color: rgba(0, 0, 0, .4);
     `, [
-    cM('invisible', `
-        background-color: rgba(0, 0, 0, 0)
-      `),
     fadeInTransition({
-      enterDuration: '0.2s',
-      leaveDuration: '0.2s',
-      enterCubicBezier: 'var(--n-bezier-in)',
-      leaveCubicBezier: 'var(--n-bezier-out)'
+      enterDuration: '.25s',
+      leaveDuration: '.25s',
+      enterCubicBezier: 'var(--n-bezier-ease-out)',
+      leaveCubicBezier: 'var(--n-bezier-ease-out)'
     })
   ]),
   cB('tour-shared', `
-      transform-origin: inherit;
-    `, [
+    transform-origin: inherit;
+  `, [
     cB('tour-arrow-wrapper', `
-        position: absolute;
-        overflow: hidden;
-        pointer-events: none;
-      `, [
+      position: absolute;
+      overflow: hidden;
+      pointer-events: none;
+    `, [
       cB('tour-arrow', `
-          transition: background-color .3s var(--n-bezier);
-          position: absolute;
-          display: block;
-          width: calc(${arrowSize});
-          height: calc(${arrowSize});
-          box-shadow: 0 0 8px 0 rgba(0, 0, 0, .12);
-          transform: rotate(45deg);
-          background-color: var(--n-color);
-          pointer-events: all;
-        `)
+        transition: background-color .3s var(--n-bezier);
+        position: absolute;
+        display: block;
+        width: calc(${arrowSize});
+        height: calc(${arrowSize});
+        box-shadow: 0 0 8px 0 rgba(0, 0, 0, .12);
+        transform: rotate(45deg);
+        background-color: var(--n-color);
+        pointer-events: all;
+      `)
     ]),
+    // body transition
+    c('&.tour-transition-enter-from, &.tour-transition-leave-to', `
+      opacity: 0;
+      transform: scale(.85);
+    `),
+    c('&.tour-transition-enter-to, &.tour-transition-leave-from', `
+      transform: scale(1);
+      opacity: 1;
+    `),
+    c('&.tour-transition-enter-active', `
+      transition:
+        box-shadow .3s var(--n-bezier),
+        background-color .3s var(--n-bezier),
+        color .3s var(--n-bezier),
+        opacity .15s var(--n-bezier-ease-out),
+        transform .15s var(--n-bezier-ease-out);
+    `),
+    c('&.tour-transition-leave-active', `
+      transition:
+        box-shadow .3s var(--n-bezier),
+        background-color .3s var(--n-bezier),
+        color .3s var(--n-bezier),
+        opacity .15s var(--n-bezier-ease-in),
+        transform .15s var(--n-bezier-ease-in);
+    `)
   ]),
   placementStyle('top-start', `
     top: calc(${arrowSize} / -2);
@@ -185,9 +231,6 @@ function placementStyle(
     `, [
       cM('show-arrow', `
         margin-${oppositePlacement[position]}: var(--n-space-arrow);
-      `),
-      cM('overlap', `
-        margin: 0;
       `),
       cCB('tour-arrow-wrapper', `
         right: 0;
