@@ -1,7 +1,166 @@
-import type { CSSProperties, Ref, VNode } from 'vue'
-import { createInjectionKey } from '../../_utils/vue/create-injection-key'
+import type { PropType, Ref } from 'vue'
+import type { FollowerPlacement } from 'vueuc'
+import { createInjectionKey } from '../../_utils'
 
-// export type TourTrigger = 'click'
+export interface TourGap {
+  offset?: number | [number, number]
+  radius?: number
+}
+
+export interface PosInfo {
+  left: number
+  top: number
+  height: number
+  width: number
+  radius: number
+}
+
+export const tourBaseProps = {
+  to: {
+    type: [String, Object] as PropType<HTMLElement | string>,
+    default: 'body'
+  },
+  show: {
+    type: Boolean as PropType<boolean>,
+    default: false
+  },
+  current: {
+    type: Number,
+    default: 0
+  },
+  defaultCurrent: {
+    type: Number,
+    default: null
+  },
+  showMask: {
+    type: Boolean as PropType<boolean>,
+    default: true,
+  },
+  zIndex: {
+    type: Number
+  },
+  gap: {
+    type: Object as PropType<TourGap>,
+    default: () => ({
+      offset: 6,
+      radius: 2,
+    }),
+  },
+  showArrow: {
+    type: Boolean,
+    default: true,
+  },
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'top'
+  },
+  scrollIntoViewOptions: {
+    type: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,
+    default: () => ({
+      block: 'center',
+    }),
+  },
+  targetAreaClickable: {
+    type: Boolean,
+    default: true,
+  },
+}
+
+export const tourMaskProps = {
+  prefixCls: String as PropType<string>,
+  showMask: {
+    type: Boolean as PropType<boolean>,
+    default: true,
+  },
+  pos: {
+    type: Object as PropType<PosInfo | null>,
+  },
+  fill: {
+    type: String,
+    default: 'rgba(0,0,0,0.5)',
+  },
+  targetAreaClickable: {
+    type: Boolean,
+    default: true,
+  },
+}
+
+export const tourStepProps = {
+  target: [String, Object, Function] as PropType<string | HTMLElement | (() => HTMLElement | null) | null>,
+  showMask: {
+    type: Boolean as PropType<boolean>,
+    default: true,
+  },
+  //   title: String,
+  //   description: String,
+  //   showClose: {
+  //     type: Boolean,
+  //     default: undefined
+  //   },
+  showArrow: {
+    type: Boolean,
+    default: undefined
+  },
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'top'
+  },
+  scrollIntoViewOptions: {
+    type: [Boolean, Object] as PropType<boolean | ScrollIntoViewOptions>,
+    default: undefined,
+  },
+}
+
+export type TourStepProps = typeof tourStepProps
+
+export const tourContentProps = {
+  prefixCls: String as PropType<string>,
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'top'
+  },
+  show: {
+    type: Boolean as PropType<boolean>,
+    default: false
+  },
+  reference: {
+    type: Object as PropType<HTMLElement | null>,
+    default: null,
+  },
+  strategy: {
+    type: String as PropType<'relative' | 'absolute' | 'fixed'>,
+    default: 'absolute',
+  },
+  offset: {
+    type: Number,
+    default: 10,
+  },
+  showArrow: Boolean,
+  zIndex: {
+    type: Number,
+    default: 0
+  },
+//   arrowClass: String,
+//   arrowStyle: [String, Object] as PropType<string | CSSProperties>,
+//   arrowWrapperClass: String,
+//   arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
+}
+
+export const tourStepsProps = {
+  current: {
+    type: Number,
+    default: 0,
+  }
+}
+
+export interface TourInjection {
+  currentStep: Ref<TourStepProps | undefined>
+  current: Ref<number>
+  total: Ref<number>
+}
+
+export const tourInjectionKey
+  = createInjectionKey<TourInjection>('n-tour')
 
 // export interface TourInst {
 //   syncPosition: () => void
@@ -11,11 +170,7 @@ import { createInjectionKey } from '../../_utils/vue/create-injection-key'
 // export type InternalTourInst = TourInst & {
 //   getMergedShow: () => boolean
 // }
-
-// export type TourBodyInjection = Ref<HTMLElement | null> | null
-
-// export const tourBodyInjectionKey
-//   = createInjectionKey<TourBodyInjection>('n-tour-body')
+// Ref<HTMLElement | null> | null
 
 // export type InternalRenderBody = (
 //   className: any,
