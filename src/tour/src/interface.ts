@@ -1,6 +1,6 @@
 import type { PropType, Ref } from 'vue'
 import type { FollowerPlacement } from 'vueuc'
-import { createInjectionKey } from '../../_utils'
+import { createInjectionKey, MaybeArray, useAdjustedTo } from '../../_utils'
 
 export interface TourGap {
   offset?: number | [number, number]
@@ -15,11 +15,24 @@ export interface PosInfo {
   radius: number
 }
 
+export interface TourStepOptions {
+  target?: string | HTMLElement
+  placement?: FollowerPlacement
+  title?: string
+  content?: string
+  type?: string
+  order?: number
+  showMask?: boolean
+  scrollIntoViewOptions: {
+    type: boolean | ScrollIntoViewOptions
+    default: () => ({
+      block: 'center'
+    })
+  }
+}
+
 export const tourBaseProps = {
-  to: {
-    type: [String, Object] as PropType<HTMLElement | string>,
-    default: 'body'
-  },
+  to: useAdjustedTo.propTo,
   show: {
     type: Boolean as PropType<boolean>,
     default: false
@@ -28,13 +41,13 @@ export const tourBaseProps = {
     type: Number,
     default: 0
   },
-  defaultCurrent: {
-    type: Number,
-    default: null
-  },
   showMask: {
     type: Boolean as PropType<boolean>,
     default: true,
+  },
+  steps: {
+    type: Array as PropType<TourStepOptions[]>,
+    default: []
   },
   zIndex: {
     type: Number
@@ -45,6 +58,10 @@ export const tourBaseProps = {
       offset: 6,
       radius: 2,
     }),
+  },
+  flip: {
+    type: Boolean,
+    default: true
   },
   showArrow: {
     type: Boolean,
@@ -64,14 +81,22 @@ export const tourBaseProps = {
     type: Boolean,
     default: true,
   },
+  'onUpdate:show': [Function, Array] as PropType<
+    MaybeArray<(value: boolean) => void>
+  >,
+  onUpdateShow: [Function, Array] as PropType<
+    MaybeArray<(value: boolean) => void>
+  >,
+  'onUpdate:current': [Function, Array] as PropType<
+    MaybeArray<(current: number) => void>
+  >,
+  onUpdateCurrent: [Function, Array] as PropType<
+    MaybeArray<(current: number) => void>
+  >
 }
 
 export const tourMaskProps = {
   prefixCls: String as PropType<string>,
-  showMask: {
-    type: Boolean as PropType<boolean>,
-    default: true,
-  },
   pos: {
     type: Object as PropType<PosInfo | null>,
   },
@@ -85,7 +110,31 @@ export const tourMaskProps = {
   },
 }
 
+export const tourStepsProps = {
+  prefixCls: String as PropType<string>,
+  show: {
+    type: Boolean as PropType<boolean>,
+    default: false
+  },
+  to: useAdjustedTo.propTo,
+  flip: {
+    type: Boolean,
+    default: true
+  },
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'top'
+  },
+  // private
+  internalDeactivateImmediately: Boolean,
+  // current: {
+  //   type: Number,
+  //   default: 0,
+  // }
+}
+
 export const tourStepProps = {
+  show: Boolean,
   target: [String, Object, Function] as PropType<string | HTMLElement | (() => HTMLElement | null) | null>,
   showMask: {
     type: Boolean as PropType<boolean>,
@@ -146,17 +195,11 @@ export const tourContentProps = {
 //   arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
 }
 
-export const tourStepsProps = {
-  current: {
-    type: Number,
-    default: 0,
-  }
-}
-
 export interface TourInjection {
-  currentStep: Ref<TourStepProps | undefined>
-  current: Ref<number>
-  total: Ref<number>
+  isMountedRef: Ref<boolean>
+  // currentStep: Ref<TourStepProps | undefined>
+  // current: Ref<number>
+  // total: Ref<number>
 }
 
 export const tourInjectionKey

@@ -8,6 +8,7 @@
 
 ```demo
 basic.vue
+mask.vue
 ```
 
 ## API
@@ -21,3 +22,4 @@ basic.vue
 | placement | `'top-start' \| 'top' \| 'top-end' \| 'right-start' \| 'right' \| 'right-end' \| 'bottom-start' \| 'bottom' \| 'bottom-end' \| 'left-start' \| 'left' \| 'left-end'` | `'top'` | tour 的弹出位置 |  |
 | show-arrow | `boolean` | `true` | 是否显示箭头 |  |
 | show-mask | `boolean \| 'transparent'` | true | 是否显示遮罩，如果设为 'transparent' 会展示透明遮罩，如果设为 false 会禁用 trap-focus |  |
+| target-area-clickable | `boolean` | `true` | 启用蒙层时，target 元素区域是否可以点击。 |  |

@@ -1,68 +1,77 @@
-import { Component, defineComponent, isVNode, VNode } from "vue";
-import { tourStepsProps } from "./interface";
-import { isArray } from "lodash-es";
-
-export const flattedChildren = (
-  children: FlattenVNodes | VNode | VNodeNormalizedChildren
-): FlattenVNodes => {
-  const vNodes = isArray(children) ? children : [children]
-  const result: FlattenVNodes = []
-
-  vNodes.forEach((child) => {
-    if (isArray(child)) {
-      result.push(...flattedChildren(child))
-    } else if (isVNode(child) && child.component?.subTree) {
-      result.push(child, ...flattedChildren(child.component.subTree))
-    } else if (isVNode(child) && isArray(child.children)) {
-      result.push(...flattedChildren(child.children))
-    } else if (isVNode(child) && child.shapeFlag === 2) {
-      // @ts-ignore
-      result.push(...flattedChildren(child.type()))
-    } else {
-      result.push(child)
-    }
-  })
-  return result
-}
-
+import { h, defineComponent, computed, Transition, inject, ref, watchEffect, VNode } from "vue";
+import { TourInjection, tourStepsProps } from "./interface";
+import { VFollower } from "vueuc";
+import { useConfig } from "../../_mixins";
+import { isJsdom, useAdjustedTo } from "../../_utils";
 
 export default defineComponent({
     name: 'TourSteps',
+    inheritAttrs: false,
     props: tourStepsProps,
-    emits: ['update-total'],
     setup(props, { slots, emit }) {
-        let cacheTotal = 0
-
-        return () => {
-          const children = slots.default?.()!
-          const result: VNode[] = []
-          let total = 0
-
-          function filterSteps(children?: FlattenVNodes) {
-              if (!isArray(children)) return;
-              (children as VNode[]).forEach((item) => {
-                  const name = ((item?.type || {}) as Component)?.name
-
-                  if (name === 'ElTourStep') {
-                      result.push(item)
-                      total += 1
-                  }
-              })
-          }
-
-          if (children.length) {
-              filterSteps(flattedChildren(children![0]?.children))
-          }
-
-          if (cacheTotal !== total) {
-              cacheTotal = total
-              emit('update-total', total)
-          }
-
-          if (result.length) {
-              return result[props.current]
-          }
-          return null
+      const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled }
+            = useConfig(props)
+      const NTour = inject<TourInjection>('NTour') as TourInjection
+      
+      const followerEnabledRef = ref(props.show)
+      const displayedRef = ref(false)
+      watchEffect(() => {
+        const { show } = props
+        if (show && !isJsdom() && !props.internalDeactivateImmediately) {
+          displayedRef.value = true
         }
+      })
+
+      function renderContentNode(): VNode | null {
+        return (
+          <div>
+            123
+          </div>
+        )
+      }
+      return {
+        displayed: displayedRef,
+        namespace: namespaceRef,
+        isMounted: NTour.isMountedRef,
+        adjustedTo: useAdjustedTo(props),
+        followerEnabled: followerEnabledRef,
+        renderContentNode
+      }
+    },
+    render() {
+      return (
+        <VFollower
+          ref="followerRef"
+          show={this.show}
+          enabled={this.show}
+          flip={this.flip}
+          placement={this.placement}
+          containerClass={this.namespace}
+        >
+          {{
+            default: () => {
+              return (
+                <Transition
+                  name="popover-transition"
+                  appear={this.isMounted}
+                  // Don't use watch to enable follower, since the transition may
+                  // make position sync timing very subtle and buggy.
+                  onEnter={() => {
+                    this.followerEnabled = true
+                  }}
+                  onAfterLeave={() => {
+                    this.followerEnabled = false
+                    this.displayed = false
+                  }}
+                >
+                  {{
+                    default: this.renderContentNode
+                  }}
+                </Transition>
+              ) 
+            }
+          }}
+        </VFollower>
+      )
     }
 })

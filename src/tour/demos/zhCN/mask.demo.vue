@@ -4,6 +4,7 @@
 使用 :mask="false" 可以将引导变为非模态。
 </markdown>
 
+
 <script lang="ts" setup>
 import { EllipsisHorizontal } from '@vicons/ionicons5'
 import { ref } from 'vue'
@@ -12,18 +13,25 @@ const ref1 = ref()
 const ref2 = ref()
 const ref3 = ref()
 
-const active = ref(false)
-function handleOpen() {
-  active.value = true
-}
+const current = ref(0)
 
 const steps = [
   {
-    title: 'Upload File',
-    description: 'Put  your files here.',
-    target: () => ref1.value
-  }
+    target: '#step1',
+    title: '开始漫游',
+    content: '虽然你已经知道了它的用途，但还是告诉你，点了它之后就可以开始漫游了'
+  },
+  {
+    target: '#step2',
+    title: '开始漫游',
+    content: '虽然你已经知道了它的用途，但还是告诉你，点了它之后就可以开始漫游了'
+  },
 ]
+
+const active = ref(false)
+function handleOpen() {
+  active.value = !active.value
+}
 </script>
 
 <template>
@@ -31,13 +39,17 @@ const steps = [
     Begin Tour
   </n-button>
 
+  {{ active }}
+  {{ current }}
+  <n-tour v-model:show="active" v-model:current="current" :steps="steps" :show-mask="false" :show-arrow="true">
+  </n-tour>
   <n-divider />
 
   <n-space>
-    <n-button ref="ref1">
+    <n-button  id="step1" ref="ref1" @click="current += 1">
       Upload
     </n-button>
-    <n-button ref="ref2" type="primary">
+    <n-button id="step2" ref="ref2" type="primary" @click="active = false">
       Save
     </n-button>
     <n-button ref="ref3">
@@ -46,5 +58,4 @@ const steps = [
       </template>
     </n-button>
   </n-space>
-  <n-tour v-model:show="active" :show-mask="false" :steps="steps" />
 </template>

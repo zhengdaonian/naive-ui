@@ -1,15 +1,16 @@
+import type { CSSProperties } from 'vue'
 import type { ThemeProps } from '../../_mixins'
-import type { TourStepProps } from './interface'
+import type { TourInjection, TourStepOptions } from './interface'
 import { zindexable } from 'vdirs'
-import { useMergedState } from 'vooks'
-import { computed, defineComponent, h, mergeProps, provide, ref, toRef, watch, withDirectives } from 'vue'
+import { useIsMounted } from 'vooks'
+import { computed, defineComponent, h, provide, reactive, ref, toRef, Transition, watch, withDirectives } from 'vue'
 import { VLazyTeleport } from 'vueuc'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
+import { call, useAdjustedTo, useLockHtmlScroll } from '../../_utils'
 import { tourLight, type TourTheme } from '../styles'
 import { useTarget } from './hooks/useTarget'
 import { tourBaseProps, tourInjectionKey } from './interface'
 import style from './styles/index.cssr'
-import TourContent from './TourContent'
 import TourMask from './TourMask'
 import TourSteps from './TourSteps'
 
@@ -34,21 +35,39 @@ export default defineComponent({
       mergedClsPrefixRef
     )
     const cssVarsRef = computed(() => {
-      // eslint-disable-next-line no-empty-pattern
       const {
+        common: { cubicBezierEaseInOut },
+        self
       } = themeRef.value
+      const {
+        boxShadow,
+        fontSize,
+        textColor
+      } = self
       return {
+        '--n-bezier': cubicBezierEaseInOut,
+        '--n-font-size': fontSize,
+        '--n-box-shadow': boxShadow,
+        '--n-text-color': textColor
       }
     })
     const themeClassHandle = inlineThemeDisabled
       ? useThemeClass('theme-class', undefined, cssVarsRef, props)
       : undefined
+    const isMountedRef = useIsMounted()
 
-    const total = ref(0)
-    const currentStep = ref<TourStepProps>()
+    const controlledShowRef = toRef(props, 'show')
+    const controlledCurrentRef = toRef(props, 'current')
+    const tmpSteps: Set<TourStepOptions> = reactive(new Set<any>())
+
+    const allSteps = computed(() => {
+      return Array.from(tmpSteps)
+        .concat(props.steps)
+        .sort((prev, next) => (prev.order || 0) - (next.order || 0))
+    })
+    const currentStep = computed(() => allSteps.value[controlledCurrentRef.value])
 
     const currentTarget = computed(() => currentStep.value?.target)
-
     const mergedMask = computed(() => currentStep.value?.showMask ?? props.showMask)
     const mergedShowMask = computed(() => !!mergedMask.value && props.show)
 
@@ -60,105 +79,132 @@ export default defineComponent({
       () => currentStep.value?.placement || props.placement
     )
 
-    const uncontrolledCurrentRef = ref(props.defaultCurrent)
-    const controlledCurrentRef = computed(() => props.current)
-    const mergedCurrentRef = useMergedState(
-      controlledCurrentRef,
-      uncontrolledCurrentRef
-    )
+    // const mergedShowArrow = computed(
+    //   () =>
+    //     !!currentTarget.value && (currentStep.value?.showArrow ?? props.showArrow)
+    // )
 
-    const mergedShowArrow = computed(
-      () =>
-        !!currentTarget.value && (currentStep.value?.showArrow ?? props.showArrow)
-    )
+    function doUpdateShow(show: boolean): void {
+      const { onUpdateShow, 'onUpdate:show': _onUpdateShow } = props
+      if (onUpdateShow)
+        call(onUpdateShow, show)
+      if (_onUpdateShow)
+        call(_onUpdateShow, show)
+    }
+
+    function doUpdateCurrent(current: number): void {
+      const { onUpdateCurrent, 'onUpdate:current': _onUpdateCurrent } = props
+      if (onUpdateCurrent)
+        call(onUpdateCurrent, current)
+      if (_onUpdateCurrent)
+        call(_onUpdateCurrent, current)
+      controlledCurrentRef.value = 0
+    }
 
     const { mergedPosInfo: pos, triggerTarget } = useTarget(
       currentTarget,
-      toRef(props, 'show'),
+      controlledShowRef,
       toRef(props, 'gap'),
       mergedMask,
       mergedScrollIntoViewOptions
     )
 
+    useLockHtmlScroll(mergedShowMask)
+
     watch(
-      () => props.show,
+      () => controlledShowRef.value,
       (val) => {
+        console.log(pos, triggerTarget)
         if (!val) {
-          uncontrolledCurrentRef.value = 0
+          doUpdateCurrent(0)
         }
       }
     )
 
-    provide(tourInjectionKey, {
-      currentStep,
-      current: mergedCurrentRef,
-      total
+    const followerEnabledRef = ref(props.show)
+
+    provide<TourInjection>('NTour', {
+      isMountedRef
     })
+        //   currentStep,
+    //   current: currentRef,
+    //   total
+    
     return {
       mergedClsPrefix: mergedClsPrefixRef,
+      cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
       namespace: namespaceRef,
-      mergedShowMask,
+      isMounted: isMountedRef,
+      adjustedTo: useAdjustedTo(props),
       onRender: themeClassHandle?.onRender,
+      controlledShowRef,
+      mergedShowMask,
       pos,
-      triggerTarget,
+      currentStep,
+      followerEnabled: followerEnabledRef,
+      // triggerTarget,
       mergedPlacement,
-      mergedShowArrow
+      // mergedShowArrow
     }
   },
   render() {
     const {
-      $slots,
       mergedClsPrefix,
       to,
-      show,
+      controlledShowRef,
       mergedShowMask,
-      pos,
       targetAreaClickable,
+      pos,
+      adjustedTo,
+      currentStep,
+      $slots,
       current,
       triggerTarget,
       mergedPlacement,
       mergedShowArrow
     } = this
     return (
-      <VLazyTeleport to={to} show={show}>
+      <VLazyTeleport to={this.adjustedTo} show={controlledShowRef}>
         {{
           default: () => {
             this.onRender?.()
             return withDirectives(
-              <div {
-                ...mergeProps(this.$attrs, {
-                  class: [
-                    `${mergedClsPrefix}-tour`,
-                    this.themeClass,
-                    this.namespace
-                  ]
-                })
-              }
+              <div
+                class={[
+                  `${mergedClsPrefix}-tour`,
+                  this.themeClass,
+                  this.namespace
+                ]}
+                style={this.cssVars as CSSProperties}
+                role="none"
               >
-                <TourMask
-                  prefixCls={mergedClsPrefix}
-                  showMask={mergedShowMask}
-                  pos={pos}
-                  target-area-clickable={targetAreaClickable}
+                <Transition
+                  name="fade-in-transition"
+                  key="mask"
+                  appear={this.isMounted}
                 >
-                </TourMask>
-                {show && (
-                  <TourContent
-                    key={current}
-                    show={show}
-                    prefixCls={mergedClsPrefix}
-                    reference={triggerTarget}
-                    placement={mergedPlacement}
-                    show-arrow={mergedShowArrow}
-                    z-index={this.zIndex}
-                  >
-                    <TourSteps current={current}>
-                      {$slots.default?.()}
-                    </TourSteps>
-                  </TourContent>
-                )}
-                {/* :current="current" @update-total="onUpdateTotal" */}
+                  {{
+                    default: () => {
+                      return mergedShowMask ? (
+                        <TourMask
+                          prefixCls={mergedClsPrefix}
+                          pos={pos}
+                          target-area-clickable={targetAreaClickable}
+                        >
+                        </TourMask>
+                      ) : null
+                    }
+                  }}
+                </Transition>
+                {/* <TourSteps
+                  prefixCls={mergedClsPrefix}
+                  show={controlledShowRef}
+                  to={to}
+                  flip={this.flip}
+                  placement={this.mergedPlacement}
+                >
+                </TourSteps> */}
               </div>,
               [
                 [zindexable, { zIndex: this.zIndex, enabled: this.show }]

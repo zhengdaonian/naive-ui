@@ -1,4 +1,4 @@
-import type { ComputedRef, PropType, Ref } from 'vue'
+import type { Ref } from 'vue'
 import type { PosInfo, TourGap } from '../interface'
 import { isArray, isFunction, isString } from 'lodash-es'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -12,11 +12,11 @@ function isInViewPort(element: HTMLElement) {
 }
 
 export function useTarget(
-  target: any,
+  target: Ref<HTMLElement | string | undefined>,
   open: Ref<boolean>,
   gap: Ref<TourGap>,
-  mergedMask: any,
-  scrollIntoViewOptions: any
+  mergedMask: Ref<boolean>,
+  scrollIntoViewOptions: Ref<boolean | ScrollIntoViewOptions>
 ) {
   const posInfo: Ref<PosInfo | null> = ref(null)
 

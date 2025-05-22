@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'vue'
-import { computed, defineComponent, h } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, onMounted } from 'vue'
 import { tourMaskProps } from './interface'
 
 export default defineComponent({
@@ -43,31 +43,45 @@ export default defineComponent({
       }
     })
 
+    const preventScroll = (e: Event) => {
+      e.preventDefault();
+    };
+
+    onMounted(() => {
+      window.addEventListener('wheel', preventScroll, { passive: false });
+      window.addEventListener('touchmove', preventScroll, { passive: false });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('wheel', preventScroll);
+      window.removeEventListener('touchmove', preventScroll);
+    });
+
+
     return {
       path,
       pathStyle
     }
   },
   render() {
-    const { prefixCls, showMask, path, pathStyle, pos, targetAreaClickable } = this
+    const { prefixCls, path, pathStyle, pos, targetAreaClickable } = this
     return (
-      showMask && (
-        <div
-          class={`${prefixCls}-tour-mask`}
+      <div
+        class={`${prefixCls}-tour-mask`}
+        style={{
+          pointerEvents: pos && targetAreaClickable ? 'none' : 'auto',
+        }}
+      >
+        <svg
           style={{
-            pointerEvents: pos && targetAreaClickable ? 'none' : 'auto',
+            width: '100%',
+            height: '100%',
           }}
         >
-          <svg
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <path class={`${prefixCls}-tour-hollow`} style={pathStyle} d={path} />
-          </svg>
-        </div>
-      )
+          <path class={`${prefixCls}-tour-hollow`} style={pathStyle} d={path} />
+        </svg>
+      </div>
+
     )
   }
 })

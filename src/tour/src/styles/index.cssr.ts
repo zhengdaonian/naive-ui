@@ -34,11 +34,12 @@ export default c([
       box-shadow .3s var(--n-bezier),
       background-color .3s var(--n-bezier),
       color .3s var(--n-bezier);
-    position: relative;
-    font-size: var(--n-font-size);
-    color: var(--n-text-color);
-    box-shadow: var(--n-box-shadow);
-    word-break: break-word;
+      position: relative;
+      font-size: var(--n-font-size);
+      color: var(--n-text-color);
+      box-shadow: var(--n-box-shadow);
+      word-break: break-word;
+      overflow: hidden;
   `, [
     c('>', [
       cB('scrollbar', `
@@ -64,11 +65,7 @@ export default c([
   ]),
   cB('tour-mask', `
       position: fixed;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, .4);
+      inset: 0px;
     `, [
     fadeInTransition({
       enterDuration: '.25s',
@@ -77,6 +74,9 @@ export default c([
       leaveCubicBezier: 'var(--n-bezier-ease-out)'
     })
   ]),
+  cB('tour-hollow', `
+    transition: all .3s ease;
+  `),
   cB('tour-shared', `
     transform-origin: inherit;
   `, [
