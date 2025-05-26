@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'vue'
-import { computed, defineComponent, h, onBeforeUnmount, onMounted } from 'vue'
+import { computed, defineComponent, h } from 'vue'
+import { usePreventScroll } from './hooks/usePreventScroll'
 import { tourMaskProps } from './interface'
 
 export default defineComponent({
@@ -43,20 +44,7 @@ export default defineComponent({
       }
     })
 
-    const preventScroll = (e: Event) => {
-      e.preventDefault();
-    };
-
-    onMounted(() => {
-      window.addEventListener('wheel', preventScroll, { passive: false });
-      window.addEventListener('touchmove', preventScroll, { passive: false });
-    });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener('wheel', preventScroll);
-      window.removeEventListener('touchmove', preventScroll);
-    });
-
+    usePreventScroll()
 
     return {
       path,

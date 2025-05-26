@@ -1,6 +1,7 @@
-import type { PropType, Ref } from 'vue'
+import type { CSSProperties, PropType, Ref } from 'vue'
 import type { FollowerPlacement } from 'vueuc'
-import { createInjectionKey, MaybeArray, useAdjustedTo } from '../../_utils'
+import type { MaybeArray } from '../../_utils'
+import { createInjectionKey, useAdjustedTo } from '../../_utils'
 
 export interface TourGap {
   offset?: number | [number, number]
@@ -23,6 +24,10 @@ export interface TourStepOptions {
   type?: string
   order?: number
   showMask?: boolean
+  showArrow: {
+    type: boolean
+    default: true
+  }
   scrollIntoViewOptions: {
     type: boolean | ScrollIntoViewOptions
     default: () => ({
@@ -125,8 +130,17 @@ export const tourStepsProps = {
     type: String as PropType<FollowerPlacement>,
     default: 'top'
   },
+  showArrow: {
+    type: Boolean,
+    default: true,
+  },
+  arrowClass: String,
+  arrowStyle: [String, Object] as PropType<string | CSSProperties>,
+  arrowWrapperClass: String,
+  arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
   // private
   internalDeactivateImmediately: Boolean,
+  cssVars: [Object] as PropType<CSSProperties>
   // current: {
   //   type: Number,
   //   default: 0,

@@ -4,7 +4,7 @@ import type { TourInjection, TourStepOptions } from './interface'
 import { zindexable } from 'vdirs'
 import { useIsMounted } from 'vooks'
 import { computed, defineComponent, h, provide, reactive, ref, toRef, Transition, watch, withDirectives } from 'vue'
-import { VLazyTeleport } from 'vueuc'
+import { VBinder, VLazyTeleport } from 'vueuc'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import { call, useAdjustedTo, useLockHtmlScroll } from '../../_utils'
 import { tourLight, type TourTheme } from '../styles'
@@ -36,19 +36,39 @@ export default defineComponent({
     )
     const cssVarsRef = computed(() => {
       const {
-        common: { cubicBezierEaseInOut },
+        common: { cubicBezierEaseInOut, cubicBezierEaseIn, cubicBezierEaseOut },
         self
       } = themeRef.value
       const {
-        boxShadow,
+        space,
+        spaceArrow,
+        padding,
         fontSize,
-        textColor
+        color,
+        textColor,
+        dividerColor,
+        boxShadow,
+        borderRadius,
+        arrowHeight,
+        arrowOffset,
+        arrowOffsetVertical
       } = self
       return {
         '--n-bezier': cubicBezierEaseInOut,
         '--n-font-size': fontSize,
         '--n-box-shadow': boxShadow,
-        '--n-text-color': textColor
+        '--n-text-color': textColor,
+        '--n-bezier-ease-in': cubicBezierEaseIn,
+        '--n-bezier-ease-out': cubicBezierEaseOut,
+        '--n-color': color,
+        '--n-divider-color': dividerColor,
+        '--n-border-radius': borderRadius,
+        '--n-arrow-height': arrowHeight,
+        '--n-arrow-offset': arrowOffset,
+        '--n-arrow-offset-vertical': arrowOffsetVertical,
+        '--n-padding': padding,
+        '--n-space': space,
+        '--n-space-arrow': spaceArrow
       }
     })
     const themeClassHandle = inlineThemeDisabled
@@ -79,10 +99,10 @@ export default defineComponent({
       () => currentStep.value?.placement || props.placement
     )
 
-    // const mergedShowArrow = computed(
-    //   () =>
-    //     !!currentTarget.value && (currentStep.value?.showArrow ?? props.showArrow)
-    // )
+    const mergedShowArrow = computed(
+      () =>
+        !!currentTarget.value && (currentStep.value?.showArrow ?? props.showArrow)
+    )
 
     function doUpdateShow(show: boolean): void {
       const { onUpdateShow, 'onUpdate:show': _onUpdateShow } = props
@@ -126,10 +146,10 @@ export default defineComponent({
     provide<TourInjection>('NTour', {
       isMountedRef
     })
-        //   currentStep,
+    //   currentStep,
     //   current: currentRef,
     //   total
-    
+
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
@@ -143,9 +163,9 @@ export default defineComponent({
       pos,
       currentStep,
       followerEnabled: followerEnabledRef,
-      // triggerTarget,
+      triggerTarget,
       mergedPlacement,
-      // mergedShowArrow
+      mergedShowArrow
     }
   },
   render() {
@@ -165,54 +185,62 @@ export default defineComponent({
       mergedShowArrow
     } = this
     return (
-      <VLazyTeleport to={this.adjustedTo} show={controlledShowRef}>
-        {{
-          default: () => {
-            this.onRender?.()
-            return withDirectives(
-              <div
-                class={[
-                  `${mergedClsPrefix}-tour`,
-                  this.themeClass,
-                  this.namespace
-                ]}
-                style={this.cssVars as CSSProperties}
-                role="none"
-              >
-                <Transition
-                  name="fade-in-transition"
-                  key="mask"
-                  appear={this.isMounted}
-                >
-                  {{
-                    default: () => {
-                      return mergedShowMask ? (
-                        <TourMask
-                          prefixCls={mergedClsPrefix}
-                          pos={pos}
-                          target-area-clickable={targetAreaClickable}
-                        >
-                        </TourMask>
-                      ) : null
-                    }
-                  }}
-                </Transition>
-                {/* <TourSteps
+      <VBinder>
+        <VLazyTeleport to={this.adjustedTo} show={controlledShowRef}>
+          {{
+            default: () => {
+              this.onRender?.()
+              return [
+                withDirectives(
+                  <div
+                    class={[
+                      `${mergedClsPrefix}-tour`,
+                      this.themeClass,
+                      this.namespace
+                    ]}
+                    style={this.cssVars as CSSProperties}
+                    role="none"
+                  >
+                    <Transition
+                      name="fade-in-transition"
+                      key="mask"
+                      appear={this.isMounted}
+                    >
+                      {{
+                        default: () => {
+                          return mergedShowMask ? (
+                            <TourMask
+                              prefixCls={mergedClsPrefix}
+                              pos={pos}
+                              target-area-clickable={targetAreaClickable}
+                            >
+                            </TourMask>
+                          ) : null
+                        }
+                      }}
+                    </Transition>
+                  </div>,
+                  [
+                    [zindexable, { zIndex: this.zIndex, enabled: this.show }]
+                  ]
+                ),
+                <TourSteps
                   prefixCls={mergedClsPrefix}
                   show={controlledShowRef}
                   to={to}
                   flip={this.flip}
                   placement={this.mergedPlacement}
+                  showArrow={this.mergedShowArrow}
+                  cssVars={this.cssVars as CSSProperties}
                 >
-                </TourSteps> */}
-              </div>,
-              [
-                [zindexable, { zIndex: this.zIndex, enabled: this.show }]
+                  <div>123</div>
+                </TourSteps>
               ]
-            )
-          }
-        }}
-      </VLazyTeleport>
+            }
+          }}
+
+        </VLazyTeleport>
+      </VBinder>
     )
   }
 })

@@ -142,6 +142,7 @@ declare module 'vue' {
     NTimelineItem: (typeof import('naive-ui'))['NTimelineItem']
     NTooltip: (typeof import('naive-ui'))['NTooltip']
     NTour: (typeof import('naive-ui'))['NTour']
+    NTourStep: (typeof import('naive-ui'))['NTourStep']
     NTr: (typeof import('naive-ui'))['NTr']
     NTransfer: (typeof import('naive-ui'))['NTransfer']
     NTree: (typeof import('naive-ui'))['NTree']
@@ -153,7 +154,6 @@ declare module 'vue' {
     NUploadTrigger: (typeof import('naive-ui'))['NUploadTrigger']
     NVirtualList: (typeof import('naive-ui'))['NVirtualList']
     NWatermark: (typeof import('naive-ui'))['NWatermark']
-    NTourStep: (typeof import('naive-ui'))['NTourStep']
   }
 }
 export {}
