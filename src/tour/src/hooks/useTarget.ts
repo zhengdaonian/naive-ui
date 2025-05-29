@@ -2,6 +2,7 @@ import type { Ref } from 'vue'
 import type { PosInfo, TourGap } from '../interface'
 import { isArray, isFunction, isString } from 'lodash-es'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { getTargetEl } from '../utils/getTargetEl'
 
 function isInViewPort(element: HTMLElement) {
   const viewWidth = window.innerWidth || document.documentElement.clientWidth
@@ -20,22 +21,8 @@ export function useTarget(
 ) {
   const posInfo: Ref<PosInfo | null> = ref(null)
 
-  const getTargetEl = () => {
-    let targetEl: HTMLElement | null | undefined
-    if (isString(target.value)) {
-      targetEl = document.querySelector<HTMLElement>(target.value)
-    }
-    else if (isFunction(target.value)) {
-      targetEl = target.value()
-    }
-    else {
-      targetEl = target.value
-    }
-    return targetEl
-  }
-
   const updatePosInfo = () => {
-    const targetEl = getTargetEl()
+    const targetEl = getTargetEl(target)
     if (!targetEl || !open.value) {
       posInfo.value = null
       return
@@ -91,26 +78,7 @@ export function useTarget(
     }
   })
 
-  const triggerTarget = computed(() => {
-    const targetEl = getTargetEl()
-    if (!mergedMask.value || !targetEl || !window.DOMRect) {
-      return targetEl || undefined
-    }
-
-    return {
-      getBoundingClientRect() {
-        return window.DOMRect.fromRect({
-          width: mergedPosInfo.value?.width || 0,
-          height: mergedPosInfo.value?.height || 0,
-          x: mergedPosInfo.value?.left || 0,
-          y: mergedPosInfo.value?.top || 0,
-        })
-      },
-    }
-  })
-
   return {
     mergedPosInfo,
-    triggerTarget,
   }
 }

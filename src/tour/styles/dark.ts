@@ -5,11 +5,11 @@ const tourDark: TourTheme = {
   name: 'Tour',
   common: commonDark,
   self(vars) {
-    // eslint-disable-next-line no-empty-pattern
     const {
-      //
+      placeholderColor
     } = vars
     return {
+      placeholderColor
     }
   }
 }

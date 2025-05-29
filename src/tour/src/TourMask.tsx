@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'vue'
 import { computed, defineComponent, h } from 'vue'
-import { usePreventScroll } from './hooks/usePreventScroll'
 import { tourMaskProps } from './interface'
 
 export default defineComponent({
@@ -43,8 +42,6 @@ export default defineComponent({
         cursor: 'auto',
       }
     })
-
-    usePreventScroll()
 
     return {
       path,

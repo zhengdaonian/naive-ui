@@ -169,7 +169,10 @@ export const popoverBaseProps = {
     type: Boolean,
     default: true
   },
-  zIndex: Number,
+  zIndex: {
+    type: Number,
+    default: 9999
+  },
   to: useAdjustedTo.propTo,
   scrollable: Boolean,
   contentClass: String,

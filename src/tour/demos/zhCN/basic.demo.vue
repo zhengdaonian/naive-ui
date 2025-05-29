@@ -16,13 +16,13 @@ const current = ref(0)
 
 const steps = [
   {
-    target: '#step1',
-    title: '开始漫游',
+    target: '#step4',
+    title: '开始漫游1',
     content: '虽然你已经知道了它的用途，但还是告诉你，点了它之后就可以开始漫游了'
   },
   {
-    target: '#step2',
-    title: '开始漫游',
+    target: '#step5',
+    title: '开始漫游2',
     content: '虽然你已经知道了它的用途，但还是告诉你，点了它之后就可以开始漫游了'
   },
 ]
@@ -40,15 +40,16 @@ function handleOpen() {
 
   {{ active }}
   {{ current }}
-  <n-tour v-model:show="active" v-model:current="current" :steps="steps" :show-arrow="true">
+  <n-tour v-model:show="active" v-model:current="current" :steps="steps" :show-arrow="true" trigger="click">
+    <span>或许不想知道你的花园长得咋样</span>
   </n-tour>
   <n-divider />
 
   <n-space>
-    <n-button  id="step1" ref="ref1" @click="current += 1">
+    <n-button id="step4" ref="ref1" @click="current += 1">
       Upload
     </n-button>
-    <n-button id="step2" ref="ref2" type="primary" @click="active = false">
+    <n-button id="step5" ref="ref2" type="primary" @click="active = false">
       Save
     </n-button>
     <n-button ref="ref3">

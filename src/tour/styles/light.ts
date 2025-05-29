@@ -10,7 +10,8 @@ function self(vars: ThemeCommonVars) {
     textColor2,
     borderRadius,
     fontSize,
-    dividerColor
+    dividerColor,
+    placeholderColor
   } = vars
   return {
     ...commonVariables,
@@ -19,7 +20,8 @@ function self(vars: ThemeCommonVars) {
     color: popoverColor,
     dividerColor,
     textColor: textColor2,
-    boxShadow: boxShadow2
+    boxShadow: boxShadow2,
+    placeholderColor
   }
 }
 

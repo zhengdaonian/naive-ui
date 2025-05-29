@@ -1,9 +1,10 @@
-import { defineComponent, inject, watch } from "vue";
-import { tourInjectionKey, tourStepProps } from "./interface";
+import { defineComponent, inject, onBeforeUnmount, watch } from "vue";
+import { tourInjectionKey } from "./interface";
+// import { tourInjectionKey, tourStepProps } from "./interface";
 
 export default defineComponent({
     name: 'TourStep',
-    props: tourStepProps,
+    // props: tourStepProps,
     setup(props) {
         // showClose,
         // closeIcon,
@@ -15,20 +16,22 @@ export default defineComponent({
         // onFinish: tourOnFinish,
         // onChange,
         const {
-            currentStep,
-            current,
-            total,
+            increaseStep,
+            decreaseStep
         } = inject(tourInjectionKey)
 
-        watch(
-            props,
-            (val) => {
-                currentStep.value = val
-            },
-            {
-                immediate: true,
-            }
-        )
+        onBeforeUnmount(() => {
+            // decreaseStep(options)
+        })
+        // watch(
+        //     props,
+        //     (val) => {
+        //         currentStep.value = val
+        //     },
+        //     {
+        //         immediate: true,
+        //     }
+        // )
     },
     render() {
         return (

@@ -42,6 +42,7 @@ function handleOpen() {
   {{ active }}
   {{ current }}
   <n-tour v-model:show="active" v-model:current="current" :steps="steps" :show-mask="false" :show-arrow="true">
+    <span>或许不想知道你的花园长得咋样</span>
   </n-tour>
   <n-divider />
 

@@ -2,7 +2,7 @@ import type { CNode } from 'css-render'
 import type { FollowerPlacement } from 'vueuc'
 import { map } from 'lodash-es'
 import { fadeInTransition } from '../../../_styles/transitions/fade-in.cssr'
-import { c, cB, cCB, cE, cM } from '../../../_utils/cssr'
+import { c, cB, cCB, cE, cM, cNotM } from '../../../_utils/cssr'
 
 const oppositePlacement = {
   top: 'bottom',
@@ -29,6 +29,45 @@ const arrowSize = 'var(--n-arrow-height) * 1.414'
 // --n-space-arrow
 // --n-divider-color
 export default c([
+  cB('tour-overlay', `
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  `),
+  cB('tour-fixed', `
+    position: fixed;
+  `),
+  cB('tour-highlight', `
+    transition: .2s var(--n-bezier);
+    border-radius: var(--n-border-radius);
+  `),
+  cB('tour-mask', `
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, .6), rgba(0, 0, 0, .6) 0 0 0 5000px;
+    `, [
+    fadeInTransition({
+      enterDuration: '.25s',
+      leaveDuration: '.25s',
+      enterCubicBezier: 'var(--n-bezier-ease-out)',
+      leaveCubicBezier: 'var(--n-bezier-ease-out)'
+    })
+  ]),
+  cB('tour-counter', `
+    color: var(--n-placeholder-color);
+    text-align: left;
+    font: var(--td-font-body-small);
+    flex: 1;
+  `),
+  cB('tour-action', `
+  `, [
+    c('button', `
+      margin-right: 8px;
+    `, [
+      c('&:last-child', 'margin-right: 0;'),
+    ])
+  ]),
+
   cB('tour', `
     transition:
       box-shadow .3s var(--n-bezier),
@@ -39,7 +78,6 @@ export default c([
       color: var(--n-text-color);
       box-shadow: var(--n-box-shadow);
       word-break: break-word;
-      overflow: hidden;
   `, [
     c('>', [
       cB('scrollbar', `
@@ -52,6 +90,12 @@ export default c([
       border-bottom: 1px solid var(--n-divider-color);
       transition: border-color .3s var(--n-bezier);
     `),
+    cNotM('raw', `
+      background-color: var(--n-color);
+      border-radius: var(--n-border-radius);
+    `, [
+      cNotM('show-header-or-footer', 'padding: var(--n-padding);')
+    ]),
     cE('footer', `
       padding: var(--n-padding);
       border-top: 1px solid var(--n-divider-color);
@@ -62,17 +106,6 @@ export default c([
         padding: var(--n-padding);
       `)
     ])
-  ]),
-  cB('tour-mask', `
-      position: fixed;
-      inset: 0px;
-    `, [
-    fadeInTransition({
-      enterDuration: '.25s',
-      leaveDuration: '.25s',
-      enterCubicBezier: 'var(--n-bezier-ease-out)',
-      leaveCubicBezier: 'var(--n-bezier-ease-out)'
-    })
   ]),
   cB('tour-hollow', `
     transition: all .3s ease;
