@@ -142,6 +142,7 @@ declare module 'vue' {
     NTimeline: (typeof import('naive-ui'))['NTimeline']
     NTimelineItem: (typeof import('naive-ui'))['NTimelineItem']
     NTooltip: (typeof import('naive-ui'))['NTooltip']
+    NTour: (typeof import('naive-ui'))['NTour']
     NTr: (typeof import('naive-ui'))['NTr']
     NTransfer: (typeof import('naive-ui'))['NTransfer']
     NTree: (typeof import('naive-ui'))['NTree']

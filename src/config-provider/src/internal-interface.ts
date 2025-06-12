@@ -104,6 +104,7 @@ import type { UploadTheme } from '../../upload/styles'
 import type { WatermarkTheme } from '../../watermark/styles'
 import type { GlobalTheme, GlobalThemeOverrides } from './interface'
 import type { Katex } from './katex'
+import { TourTheme } from '../../tour/styles'
 
 export interface GlobalThemeWithoutCommon {
   Alert?: AlertTheme
@@ -197,6 +198,7 @@ export interface GlobalThemeWithoutCommon {
   InternalSelectMenu?: InternalSelectMenuTheme
   InternalSelection?: InternalSelectionTheme
   InputOtp?: InputOtpTheme
+  Tour?: TourTheme
 }
 
 export interface GlobalComponentConfig {

@@ -296,6 +296,10 @@ export const enComponentRoutes = [
       import('../../src/time-picker/demos/enUS/index.demo-entry.md')
   },
   {
+    path: 'tour',
+    component: () => import('../../src/tour/demos/enUS/index.demo-entry.md')
+  },
+  {
     path: 'dialog',
     component: () => import('../../src/dialog/demos/enUS/index.demo-entry.md')
   },
@@ -712,6 +716,10 @@ export const zhComponentRoutes = [
     path: 'time-picker',
     component: () =>
       import('../../src/time-picker/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'tour',
+    component: () => import('../../src/tour/demos/zhCN/index.demo-entry.md')
   },
   {
     path: 'dialog',
