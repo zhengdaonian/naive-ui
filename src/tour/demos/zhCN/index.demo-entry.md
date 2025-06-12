@@ -8,6 +8,7 @@
 
 ```demo
 basic.vue
+mask.vue
 ```
 
 ## API

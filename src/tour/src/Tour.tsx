@@ -1,14 +1,14 @@
-import { h, defineComponent, PropType, Fragment, withDirectives, computed, CSSProperties, reactive, toRef, Transition, provide, watch } from 'vue'
+import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide, CSSProperties } from 'vue'
 import { VLazyTeleport } from 'vueuc'
 import { ThemeProps, useConfig, useTheme, useThemeClass } from '../../_mixins'
 import style from './styles/index.cssr'
 import { tourLight, TourTheme } from '../styles'
-import { NPopover, zindexable } from 'naive-ui'
+import { zindexable } from 'naive-ui'
 import { tourBaseProps, tourInjectionKey, TourStepOption } from './public-types'
 import { useTarget } from './hooks/useTarget'
 import { useIsMounted } from 'vooks'
 import TourMask from './TourMask'
-import { getTargetEl } from './utils/getTargetEl'
+import { useLockHtmlScroll } from '../../_utils'
 // import { ThemeProps } from '../../_mixins'
 
 export const tourProps = {
@@ -107,18 +107,22 @@ export default defineComponent({
       mergedScrollIntoViewOptions
     )
 
+    const referenceStyle = computed(() => {
+      console.log(currentTarget)
+      return {
+        top: `${pos.value?.top || 0}px`,
+        left: `${pos.value?.left || 0}px`,
+        width: `${pos.value?.width || 0}px`,
+        height: `${pos.value?.height || 0}px`,
+      }
+    })
+
     provide(tourInjectionKey, {
         mergedClsPrefixRef
     })
-
-    watch(
-        () => controlledShowRef.value,
-        (value) => {
-            const currentHighlightLayerElm = getTargetEl(currentTarget)
-            console.log(currentHighlightLayerElm)
-            // scrollToParentVisibleArea(currentHighlightLayerElm)
-        }
-    )
+    
+    useLockHtmlScroll(controlledShowRef)
+    usePreventScroll()
     
     return {
         mergedClsPrefix: mergedClsPrefixRef,
@@ -130,13 +134,16 @@ export default defineComponent({
         controlledShowRef,
         mergedShowMask,
         currentStep,
-        pos
+        pos,
+        currentTarget,
+        referenceStyle
     }
   },
   render() {
     const { 
         mergedClsPrefix,
-        pos
+        pos,
+        referenceStyle
      } = this
 
     return (
@@ -146,11 +153,11 @@ export default defineComponent({
                     this.onRender?.()
                     return withDirectives(
                         <div 
-                            class={[
-                                `${mergedClsPrefix}-tour`,
-                                this.namespace,
-                                this.themeClass
-                            ]}
+                          class={[
+                            `${mergedClsPrefix}-tour`,
+                            this.namespace,
+                            this.themeClass
+                          ]}
                         >
                             {this.mergedShowMask ? (
                                 <Transition name="fade-in-transition" appear={this.isMounted}>
@@ -164,7 +171,17 @@ export default defineComponent({
                                     }}
                                 </Transition>
                             ): null}
-                            
+                            {
+                              this.currentTarget ? (
+                                <div
+                                  class={`${mergedClsPrefix}-tour-reference`}
+                                  style={{
+                                    ...referenceStyle
+                                  }}
+                                />
+                              ): null
+                            }
+                              
                         </div>,
                         [[zindexable, { zIndex: this.zIndex, enabled: this.controlledShowRef }]]
                     )

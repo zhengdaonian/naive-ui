@@ -21,20 +21,20 @@ export default defineComponent({
         })
 
         const path = computed(() => {
-        const width = window.innerWidth
-        const height = window.innerHeight
-        const info = roundInfo.value
-        const _path = `M${width},0 L0,0 L0,${height} L${width},${height} L${width},0 Z`
-        const _radius = radius.value
-        return props.pos
-            ? `${_path} M${props.pos.left + _radius},${props.pos.top} h${
-            props.pos.width - _radius * 2
-            } ${info.topRight} v${props.pos.height - _radius * 2} ${
-            info.bottomRight
-            } h${-props.pos.width + _radius * 2} ${info.bottomLeft} v${
-            -props.pos.height + _radius * 2
-            } ${info.topLeft} z`
-            : _path
+            const width = window.innerWidth
+            const height = window.innerHeight
+            const info = roundInfo.value
+            const _path = `M${width},0 L0,0 L0,${height} L${width},${height} L${width},0 Z`
+            const _radius = radius.value
+            return props.pos
+                ? `${_path} M${props.pos.left + _radius},${props.pos.top} h${
+                props.pos.width - _radius * 2
+                } ${info.topRight} v${props.pos.height - _radius * 2} ${
+                info.bottomRight
+                } h${-props.pos.width + _radius * 2} ${info.bottomLeft} v${
+                -props.pos.height + _radius * 2
+                } ${info.topLeft} z`
+                : _path
         })
 
         const pathStyle = computed<CSSProperties>(() => {
@@ -44,6 +44,7 @@ export default defineComponent({
                 cursor: 'auto',
             }
         })
+        
         return {
             mergedClsPrefix: NTour.mergedClsPrefixRef,
             path,

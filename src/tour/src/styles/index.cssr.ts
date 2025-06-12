@@ -10,6 +10,10 @@ export default c([
         inset: 0px;
         pointer-events: none;
     `),
+    cB('tour-reference', `
+        position: absolute;
+        pointer-events: none;
+    `)
     // cB('tour-fixed', `
     //     position: fixed;
     // `),
