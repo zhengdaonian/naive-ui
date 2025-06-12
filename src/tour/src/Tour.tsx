@@ -1,4 +1,4 @@
-import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide, CSSProperties } from 'vue'
+import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide } from 'vue'
 import { VLazyTeleport } from 'vueuc'
 import { ThemeProps, useConfig, useTheme, useThemeClass } from '../../_mixins'
 import style from './styles/index.cssr'
@@ -9,6 +9,7 @@ import { useTarget } from './hooks/useTarget'
 import { useIsMounted } from 'vooks'
 import TourMask from './TourMask'
 import { useLockHtmlScroll } from '../../_utils'
+import { usePreventScroll } from './hooks/usePreventScroll'
 // import { ThemeProps } from '../../_mixins'
 
 export const tourProps = {
@@ -122,7 +123,7 @@ export default defineComponent({
     })
     
     useLockHtmlScroll(controlledShowRef)
-    usePreventScroll()
+    usePreventScroll(controlledShowRef)
     
     return {
         mergedClsPrefix: mergedClsPrefixRef,
@@ -172,7 +173,7 @@ export default defineComponent({
                                 </Transition>
                             ): null}
                             {
-                              this.currentTarget ? (
+                              this.controlledShowRef && this.currentTarget ? (
                                 <div
                                   class={`${mergedClsPrefix}-tour-reference`}
                                   style={{
@@ -181,7 +182,7 @@ export default defineComponent({
                                 />
                               ): null
                             }
-                              
+                            <div>234</div>
                         </div>,
                         [[zindexable, { zIndex: this.zIndex, enabled: this.controlledShowRef }]]
                     )

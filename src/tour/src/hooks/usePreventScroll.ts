@@ -1,9 +1,11 @@
-import { onMounted, onUnmounted } from "vue"
+import { onMounted, onUnmounted, Ref } from "vue"
 
-export function usePreventScroll() {
+export function usePreventScroll(lockRef: Ref<boolean>) {
     // 阻止默认滚动行为的处理函数
     const preventScroll = (e: Event) => {
-        e.preventDefault()
+        if (lockRef.value) {
+            e.preventDefault()
+        }
     }
 
     onMounted(() => {
