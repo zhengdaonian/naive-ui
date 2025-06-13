@@ -52,12 +52,14 @@ export default defineComponent({
         }
     },
     render() {
-        const { mergedClsPrefix } = this
+        const { mergedClsPrefix, zIndex } = this
+        const style = { zIndex: zIndex };
         return (
             <div
                 class={[
                     `${mergedClsPrefix}-tour-mask`,
                 ]}
+                style={style}
             >
                 <svg style="width: 100%; height: 100%">
                     <path class={`${mergedClsPrefix}-tour-hollow`} style={this.pathStyle} d={this.path} />

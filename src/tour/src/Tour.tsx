@@ -1,14 +1,14 @@
-import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide } from 'vue'
+import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide, CSSProperties } from 'vue'
 import { VLazyTeleport } from 'vueuc'
 import { ThemeProps, useConfig, useTheme, useThemeClass } from '../../_mixins'
 import style from './styles/index.cssr'
 import { tourLight, TourTheme } from '../styles'
-import { zindexable } from 'naive-ui'
+import { NButton, NPopover, zindexable } from 'naive-ui'
 import { tourBaseProps, tourInjectionKey, TourStepOption } from './public-types'
 import { useTarget } from './hooks/useTarget'
 import { useIsMounted } from 'vooks'
 import TourMask from './TourMask'
-import { useLockHtmlScroll } from '../../_utils'
+import { call, useLockHtmlScroll } from '../../_utils'
 import { usePreventScroll } from './hooks/usePreventScroll'
 // import { ThemeProps } from '../../_mixins'
 
@@ -74,7 +74,6 @@ export default defineComponent({
       }
     })
 
-
     const themeClassHandle = inlineThemeDisabled
       ? useThemeClass('theme-class', undefined, cssVarsRef, props)
       : undefined
@@ -108,6 +107,59 @@ export default defineComponent({
       mergedScrollIntoViewOptions
     )
 
+    function doUpdateCurrent(current: number): void {
+      const { onUpdateCurrent, 'onUpdate:current': _onUpdateCurrent } = props
+      if (onUpdateCurrent)
+        call(onUpdateCurrent, current)
+      if (_onUpdateCurrent)
+        call(_onUpdateCurrent, current)
+      controlledCurrentRef.value = current
+    }
+
+    function doUpdateShow(show: boolean): void {
+      const { onUpdateShow, 'onUpdate:show': _onUpdateShow } = props
+      if (onUpdateShow)
+        call(onUpdateShow, show)
+      if (_onUpdateShow)
+        call(_onUpdateShow, show)
+      controlledShowRef.value = show
+    }
+
+    const handlePrev = () => {
+      if (!controlledShowRef.value || controlledCurrentRef.value <= 0)
+        return
+      doUpdateCurrent(controlledCurrentRef.value - 1)
+    }
+
+    const handleNext = () => {
+      if (!controlledShowRef.value) return
+      doUpdateCurrent(controlledCurrentRef.value + 1)
+    }
+
+    const handleSkip = () => {
+      if (!controlledShowRef.value) return
+      doUpdateShow(false)
+      const { onSkip } = props
+      if (onSkip)
+        call(onSkip, controlledCurrentRef.value, totalSteps.value)
+    }
+
+    const handleFinish = () => {
+      if (!controlledShowRef.value) return
+      doUpdateShow(false)
+      const { onFinish } = props
+      if (onFinish)
+        call(onFinish, controlledCurrentRef.value, totalSteps.value)
+    }
+
+    const handleClose = () => {
+      if (!controlledShowRef.value) return
+      doUpdateShow(false)
+      const { onClose } = props
+      if (onClose)
+        call(onClose, controlledCurrentRef.value, totalSteps.value)
+    }
+
     const referenceStyle = computed(() => {
       console.log(currentTarget)
       return {
@@ -132,27 +184,147 @@ export default defineComponent({
         themeClass: themeClassHandle?.themeClass,
         onRender: themeClassHandle?.onRender,
         isMounted: isMountedRef,
-        controlledShowRef,
+        controlledShow: controlledShowRef,
         mergedShowMask,
         currentStep,
+        controlledCurrent: controlledCurrentRef,
+        allSteps,
         pos,
         currentTarget,
-        referenceStyle
+        referenceStyle,
+        handlePrev,
+        handleNext,
+        handleSkip,
+        handleFinish
     }
   },
   render() {
     const { 
         mergedClsPrefix,
         pos,
-        referenceStyle
+        referenceStyle,
+        zIndex,
+        currentStep,
+        controlledCurrent,
+        allSteps,
+        controlledShow,
+        handlePrev,
+        handleNext,
+        handleSkip,
+        handleFinish
      } = this
 
+    const renderTitle = () => {
+      return (
+        <span>
+          {currentStep.title || ''}
+        </span>
+      )
+    }
+
+    const renderContent = () => {
+      return (
+        <span>
+          {currentStep.content || ''}
+        </span>
+      )
+    }
+
+    const renderFooter = () => {
+      const { hideSkip, hidePrev } = this
+      const isLast = controlledCurrent === allSteps.length - 1
+      const isFirst = controlledCurrent === 0
+      return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div
+            class={`${mergedClsPrefix}-tour-counter`}
+            style={{
+              ...this.cssVars as CSSProperties
+            }}
+          >
+            { `${controlledCurrent + 1}/${allSteps.length}` }
+          </div>
+          <div
+            class={`${mergedClsPrefix}-tour-action`}
+            style={{
+              ...this.cssVars as CSSProperties
+            }}
+          >
+            {!hideSkip && !isLast && (
+              <NButton
+                key="skip"
+                type="default"
+                size="small"
+                onClick={() => handleSkip()}
+              >
+                跳过
+              </NButton>
+            )}
+            {!hidePrev && !isFirst && (
+              <NButton
+                key="prev"
+                type="default"
+                size="small"
+                onClick={() => handlePrev()}
+              >
+                上一步
+              </NButton>
+            )}
+            {!isLast && (
+              <NButton
+                key="next"
+                size="small"
+                type="primary"
+                onClick={() => handleNext()}
+              >
+                下一步
+              </NButton>
+            )}
+            {isLast && (
+              <NButton
+                key="finish"
+                size="small"
+                type="primary"
+                onClick={() => handleFinish()}
+              >
+                完成
+              </NButton>
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    const renderReference = () => {
+      return (
+        <div
+          class={`${mergedClsPrefix}-tour-reference`}
+          style={{
+            ...referenceStyle
+          }}
+        />
+      )
+    }
+
+    const renderPopover = () => {
+      return (
+        <NPopover zIndex={this.zIndex} show={controlledShow}>
+          {{
+            header: () => h(renderTitle),
+            trigger: () => h(renderReference),
+            default: () => h(renderContent),
+            footer: () => h(renderFooter)
+          }}
+        </NPopover>
+      )
+    }
+
     return (
-        <VLazyTeleport to={this.to} show={this.controlledShowRef}>
+        <VLazyTeleport to={this.to} show={controlledShow}>
             {{
                 default: () => {
                     this.onRender?.()
-                    return withDirectives(
+                    return (
                         <div 
                           class={[
                             `${mergedClsPrefix}-tour`,
@@ -164,27 +336,17 @@ export default defineComponent({
                                 <Transition name="fade-in-transition" appear={this.isMounted}>
                                     {{
                                         default: () =>
-                                        this.controlledShowRef ? (
+                                        controlledShow ? (
                                             <TourMask
                                                 pos={pos}
+                                                zIndex={zIndex - 2}
                                             ></TourMask>
                                         ) : null
                                     }}
                                 </Transition>
                             ): null}
-                            {
-                              this.controlledShowRef && this.currentTarget ? (
-                                <div
-                                  class={`${mergedClsPrefix}-tour-reference`}
-                                  style={{
-                                    ...referenceStyle
-                                  }}
-                                />
-                              ): null
-                            }
-                            <div>234</div>
-                        </div>,
-                        [[zindexable, { zIndex: this.zIndex, enabled: this.controlledShowRef }]]
+                            {renderPopover()}
+                        </div>
                     )
                 }
             }}

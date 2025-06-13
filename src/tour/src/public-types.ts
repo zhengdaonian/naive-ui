@@ -1,6 +1,6 @@
 import { PropType, Ref } from "vue";
 import { FollowerPlacement } from "vueuc";
-import { createInjectionKey } from "../../_utils";
+import { createInjectionKey, MaybeArray } from "../../_utils";
 
 export interface TourGap {
   offset?: number | [number, number]
@@ -35,11 +35,15 @@ export const tourBaseProps = {
         default: false
     },
     zIndex: {
-        type: Number
+        type: Number,
+        default: 99999
     },
     current: {
         type: Number,
         default: 0,
+    },
+    defaultCurrent: {
+        type: Number
     },
     steps: {
         type: Array as PropType<TourStepOption[]>,
@@ -62,12 +66,43 @@ export const tourBaseProps = {
             block: 'center',
         }),
     },
+    hideCounter: {
+        type: Boolean,
+        default: false
+    },
+    hideSkip: {
+        type: Boolean,
+        default: false
+    },
+    hidePrev: {
+        type: Boolean,
+        default: false
+    },
+    'onUpdate:show': [Function, Array] as PropType<
+        MaybeArray<(value: boolean) => void>
+    >,
+    onUpdateShow: [Function, Array] as PropType<
+        MaybeArray<(value: boolean) => void>
+    >,
+    'onUpdate:current': [Function, Array] as PropType<
+        MaybeArray<(current: number) => void>
+    >,
+    onUpdateCurrent: [Function, Array] as PropType<
+        MaybeArray<(current: number) => void>
+    >,
+    onFinish: Function as PropType<(current: number, total: number) => void>,
+    onSkip: Function as PropType<(current: number, total: number) => void>,
+    onClose: Function as PropType<(current: number, total: number) => void>,
 }
 
 export const tourMaskProps = {
     pos: {
         type: [Object] as PropType<PosInfo | null>
     },
+    zIndex: {
+        type: Number,
+        default: 99998
+    }
 }
 
 export interface TourInjection {
