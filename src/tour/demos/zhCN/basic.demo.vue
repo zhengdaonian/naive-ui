@@ -41,7 +41,11 @@ function handleOpen() {
   {{ active }}
   {{ current }}
   <n-tour v-model:show="active" v-model:current="current" :steps="steps" :show-arrow="true" trigger="click">
-    <span>或许不想知道你的花园长得咋样</span>
+    <n-tour-step
+      target="#start-4"
+      title="开始漫游"
+      content="虽然你已经知道了它的用途，但还是告诉你，点了它之后就可以开始漫游了"
+    />
   </n-tour>
   <n-divider />
 

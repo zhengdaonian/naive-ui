@@ -1,20 +1,24 @@
-import { h, defineComponent, withDirectives, computed, reactive, toRef, Transition, provide, CSSProperties } from 'vue'
-import { VLazyTeleport } from 'vueuc'
-import { ThemeProps, useConfig, useTheme, useThemeClass } from '../../_mixins'
-import style from './styles/index.cssr'
-import { tourLight, TourTheme } from '../styles'
-import { NButton, NPopover, zindexable } from 'naive-ui'
-import { tourBaseProps, tourInjectionKey, TourStepOption } from './public-types'
-import { useTarget } from './hooks/useTarget'
+import type { CSSProperties } from 'vue'
+import type { ThemeProps } from '../../_mixins'
+import type { TourTheme } from '../styles'
+import type { TourStepOption } from './public-types'
+import { NButton, NModal, NPopover } from 'naive-ui'
 import { useIsMounted } from 'vooks'
-import TourMask from './TourMask'
+import { computed, defineComponent, h, provide, reactive, toRef, Transition } from 'vue'
+import { VLazyTeleport } from 'vueuc'
+import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import { call, useLockHtmlScroll } from '../../_utils'
+import { tourLight } from '../styles'
 import { usePreventScroll } from './hooks/usePreventScroll'
+import { useTarget } from './hooks/useTarget'
+import { tourBaseProps, tourInjectionKey } from './public-types'
+import style from './styles/index.cssr'
+import TourMask from './TourMask'
 // import { ThemeProps } from '../../_mixins'
 
 export const tourProps = {
-    ...(useTheme.props as ThemeProps<TourTheme>),
-   ...tourBaseProps
+  ...(useTheme.props as ThemeProps<TourTheme>),
+  ...tourBaseProps
 }
 
 export default defineComponent({
@@ -99,7 +103,7 @@ export default defineComponent({
 
     const mergedMask = computed(() => currentStep.value?.showMask ?? props.showMask)
     const mergedShowMask = computed(() => !!mergedMask.value && props.show)
-    
+
     const { mergedPosInfo: pos } = useTarget(
       currentTarget,
       controlledShowRef,
@@ -132,12 +136,14 @@ export default defineComponent({
     }
 
     const handleNext = () => {
-      if (!controlledShowRef.value) return
+      if (!controlledShowRef.value)
+        return
       doUpdateCurrent(controlledCurrentRef.value + 1)
     }
 
     const handleSkip = () => {
-      if (!controlledShowRef.value) return
+      if (!controlledShowRef.value)
+        return
       doUpdateShow(false)
       const { onSkip } = props
       if (onSkip)
@@ -145,7 +151,8 @@ export default defineComponent({
     }
 
     const handleFinish = () => {
-      if (!controlledShowRef.value) return
+      if (!controlledShowRef.value)
+        return
       doUpdateShow(false)
       const { onFinish } = props
       if (onFinish)
@@ -153,7 +160,8 @@ export default defineComponent({
     }
 
     const handleClose = () => {
-      if (!controlledShowRef.value) return
+      if (!controlledShowRef.value)
+        return
       doUpdateShow(false)
       const { onClose } = props
       if (onClose)
@@ -171,48 +179,52 @@ export default defineComponent({
     })
 
     provide(tourInjectionKey, {
-        mergedClsPrefixRef
+      mergedClsPrefixRef
     })
-    
+
     useLockHtmlScroll(controlledShowRef)
-    usePreventScroll(controlledShowRef)
-    
+    // usePreventScroll(controlledShowRef)
+
     return {
-        mergedClsPrefix: mergedClsPrefixRef,
-        namespace: namespaceRef,
-        cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
-        themeClass: themeClassHandle?.themeClass,
-        onRender: themeClassHandle?.onRender,
-        isMounted: isMountedRef,
-        controlledShow: controlledShowRef,
-        mergedShowMask,
-        currentStep,
-        controlledCurrent: controlledCurrentRef,
-        allSteps,
-        pos,
-        currentTarget,
-        referenceStyle,
-        handlePrev,
-        handleNext,
-        handleSkip,
-        handleFinish
+      mergedClsPrefix: mergedClsPrefixRef,
+      namespace: namespaceRef,
+      cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
+      themeClass: themeClassHandle?.themeClass,
+      onRender: themeClassHandle?.onRender,
+      isMounted: isMountedRef,
+      controlledShow: controlledShowRef,
+      mergedShowMask,
+      currentStep,
+      controlledCurrent: controlledCurrentRef,
+      allSteps,
+      pos,
+      currentTarget,
+      referenceStyle,
+      doUpdateShow,
+      handlePrev,
+      handleNext,
+      handleSkip,
+      handleFinish,
+      handleClose
     }
   },
   render() {
-    const { 
-        mergedClsPrefix,
-        pos,
-        referenceStyle,
-        zIndex,
-        currentStep,
-        controlledCurrent,
-        allSteps,
-        controlledShow,
-        handlePrev,
-        handleNext,
-        handleSkip,
-        handleFinish
-     } = this
+    const {
+      mergedClsPrefix,
+      pos,
+      referenceStyle,
+      zIndex,
+      currentStep,
+      controlledCurrent,
+      allSteps,
+      controlledShow,
+      doUpdateShow,
+      handlePrev,
+      handleNext,
+      handleSkip,
+      handleFinish,
+      handleClose
+    } = this
 
     const renderTitle = () => {
       return (
@@ -230,12 +242,15 @@ export default defineComponent({
       )
     }
 
-    const renderFooter = () => {
+    const renderAction = () => {
       const { hideSkip, hidePrev } = this
       const isLast = controlledCurrent === allSteps.length - 1
       const isFirst = controlledCurrent === 0
       return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div class={[
+          `${mergedClsPrefix}-tour-footer`
+        ]}
+        >
           <div
             class={`${mergedClsPrefix}-tour-counter`}
             style={{
@@ -306,51 +321,53 @@ export default defineComponent({
       )
     }
 
-    const renderPopover = () => {
-      return (
-        <NPopover zIndex={this.zIndex} show={controlledShow}>
-          {{
-            header: () => h(renderTitle),
-            trigger: () => h(renderReference),
-            default: () => h(renderContent),
-            footer: () => h(renderFooter)
-          }}
-        </NPopover>
-      )
-    }
-
     return (
-        <VLazyTeleport to={this.to} show={controlledShow}>
-            {{
-                default: () => {
-                    this.onRender?.()
-                    return (
-                        <div 
-                          class={[
-                            `${mergedClsPrefix}-tour`,
-                            this.namespace,
-                            this.themeClass
-                          ]}
-                        >
-                            {this.mergedShowMask ? (
-                                <Transition name="fade-in-transition" appear={this.isMounted}>
-                                    {{
-                                        default: () =>
-                                        controlledShow ? (
-                                            <TourMask
-                                                pos={pos}
-                                                zIndex={zIndex - 2}
-                                            ></TourMask>
-                                        ) : null
-                                    }}
-                                </Transition>
-                            ): null}
-                            {renderPopover()}
-                        </div>
-                    )
-                }
-            }}
-        </VLazyTeleport>
+      <VLazyTeleport to={this.to} show={controlledShow}>
+        {{
+          default: () => {
+            this.onRender?.()
+            return (
+              <div
+                class={[
+                  `${mergedClsPrefix}-tour`,
+                  this.namespace,
+                  this.themeClass
+                ]}
+              >
+                {this.mergedShowMask ? (
+                  <Transition name="fade-in-transition" appear={this.isMounted}>
+                    {{
+                      default: () =>
+                        controlledShow ? (
+                          <TourMask
+                            pos={pos}
+                            zIndex={zIndex - 2}
+                          >
+                          </TourMask>
+                        ) : null
+                    }}
+                  </Transition>
+                ) : null}
+
+                <NModal
+                  preset="dialog"
+                  onClose={() => doUpdateShow(false)}
+                  show={controlledShow}
+                  zIndex={zIndex}
+                  showIcon={false}
+                >
+                  {{
+                    header: () => h(renderTitle),
+                    default: () => h(renderContent),
+                    action: () => h(renderAction)
+                  }}
+
+                </NModal>
+              </div>
+            )
+          }
+        }}
+      </VLazyTeleport>
     )
   }
 })
