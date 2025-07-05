@@ -81,6 +81,7 @@ import { tableDark } from '../table/styles'
 import { tabsDark } from '../tabs/styles'
 import { tagDark } from '../tag/styles'
 import { thingDark } from '../thing/styles'
+import { thinkingDark } from '../thinking/styles'
 import { timePickerDark } from '../time-picker/styles'
 import { timelineDark } from '../timeline/styles'
 import { tooltipDark } from '../tooltip/styles'
@@ -186,5 +187,6 @@ export const darkTheme: BuiltInGlobalTheme = {
   Markdown: markdownDark,
   Typewriter: typewriterDark,
   Bubble: bubbleDark,
-  BubbleList: bubbleListDark
+  BubbleList: bubbleListDark,
+  Thinking: thinkingDark
 }

@@ -615,6 +615,10 @@ export const enComponentRoutes = [
       import('../../src/bubble-list/demos/enUS/index.demo-entry.md')
   },
   {
+    path: 'thinking',
+    component: () => import('../../src/thinking/demos/enUS/index.demo-entry.md')
+  },
+  {
     path: 'marquee',
     component: () => import('../../src/marquee/demos/enUS/index.demo-entry.md')
   }
@@ -1049,6 +1053,10 @@ export const zhComponentRoutes = [
     path: 'bubbleList',
     component: () =>
       import('../../src/bubble-list/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'thinking',
+    component: () => import('../../src/thinking/demos/zhCN/index.demo-entry.md')
   },
   {
     path: 'marquee',

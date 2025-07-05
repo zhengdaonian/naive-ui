@@ -84,6 +84,7 @@ import { tableLight } from '../table/styles'
 import { tabsLight } from '../tabs/styles'
 import { tagLight } from '../tag/styles'
 import { thingLight } from '../thing/styles'
+import { thinkingLight } from '../thinking/styles'
 import { timePickerLight } from '../time-picker/styles'
 import { timelineLight } from '../timeline/styles'
 import { tooltipLight } from '../tooltip/styles'
@@ -189,5 +190,6 @@ export const lightTheme: BuiltInGlobalTheme = {
   Markdown: markdownLight,
   Typewriter: typewriterLight,
   Bubble: bubbleLight,
-  BubbleList: bubbleListLight
+  BubbleList: bubbleListLight,
+  Thinking: thinkingLight
 }

@@ -243,6 +243,13 @@ export function createComponentMenuOptions({ lang, theme }) {
           enSuffix: true,
           path: '/bubbleList',
           isNew: true
+        },
+        {
+          en: 'Thinking',
+          zh: '思考中',
+          enSuffix: true,
+          path: '/thinking',
+          isNew: true
         }
       ]
     }),

@@ -95,6 +95,7 @@ import type { TableTheme } from '../../table/styles'
 import type { TabsTheme } from '../../tabs/styles'
 import type { TagTheme } from '../../tag/styles'
 import type { ThingTheme } from '../../thing/styles'
+import type { ThinkingTheme } from '../../thinking/styles'
 import type { Size as TimePickerSize } from '../../time-picker/src/interface'
 import type { TimePickerTheme } from '../../time-picker/styles'
 import type { TimelineTheme } from '../../timeline/styles'
@@ -205,6 +206,7 @@ export interface GlobalThemeWithoutCommon {
   Typewriter?: TypewriterTheme
   Bubble?: BubbleTheme
   BubbleList?: BubbleListTheme
+  Thinking?: ThinkingTheme
 }
 
 export interface GlobalComponentConfig {
