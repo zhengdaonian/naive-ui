@@ -82,6 +82,7 @@ import { thingDark } from '../thing/styles'
 import { timePickerDark } from '../time-picker/styles'
 import { timelineDark } from '../timeline/styles'
 import { tooltipDark } from '../tooltip/styles'
+import { tourDark } from '../tour/styles'
 import { transferDark } from '../transfer/styles'
 import { treeSelectDark } from '../tree-select/styles'
 import { treeDark } from '../tree/styles'
@@ -180,5 +181,6 @@ export const darkTheme: BuiltInGlobalTheme = {
   Split: splitDark,
   FloatButton: floatButtonDark,
   FloatButtonGroup: floatButtonGroupDark,
-  Marquee: marqueeDark
+  Marquee: marqueeDark,
+  Tour: tourDark
 }

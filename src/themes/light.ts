@@ -85,6 +85,7 @@ import { thingLight } from '../thing/styles'
 import { timePickerLight } from '../time-picker/styles'
 import { timelineLight } from '../timeline/styles'
 import { tooltipLight } from '../tooltip/styles'
+import { tourLight } from '../tour/styles'
 import { transferLight } from '../transfer/styles'
 import { treeSelectLight } from '../tree-select/styles'
 import { treeLight } from '../tree/styles'
@@ -183,5 +184,6 @@ export const lightTheme: BuiltInGlobalTheme = {
   Split: splitLight,
   FloatButton: floatButtonLight,
   FloatButtonGroup: floatButtonGroupLight,
-  Marquee: marqueeLight
+  Marquee: marqueeLight,
+  Tour: tourLight
 }

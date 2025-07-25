@@ -71,6 +71,7 @@
   "dependencies": {
     "@css-render/plugin-bem": "^0.15.14",
     "@css-render/vue3-ssr": "^0.15.14",
+    "@floating-ui/dom": "^1.7.2",
     "@types/katex": "^0.16.2",
     "@types/lodash": "^4.14.198",
     "@types/lodash-es": "^4.17.9",

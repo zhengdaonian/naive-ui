@@ -97,6 +97,7 @@ import type { Size as TimePickerSize } from '../../time-picker/src/interface'
 import type { TimePickerTheme } from '../../time-picker/styles'
 import type { TimelineTheme } from '../../timeline/styles'
 import type { TooltipTheme } from '../../tooltip/styles'
+import type { TourTheme } from '../../tour/styles'
 import type { TransferTheme } from '../../transfer/styles'
 import type { TreeSelectTheme } from '../../tree-select/styles'
 import type { TreeTheme } from '../../tree/styles'
@@ -199,6 +200,7 @@ export interface GlobalThemeWithoutCommon {
   InternalSelectMenu?: InternalSelectMenuTheme
   InternalSelection?: InternalSelectionTheme
   InputOtp?: InputOtpTheme
+  Tour?: TourTheme
 }
 
 export interface GlobalComponentConfig {
